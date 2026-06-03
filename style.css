@@ -58,6 +58,7 @@ img {
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.52);
   box-shadow: 0 0 0 1px rgba(220, 231, 226, 0.7);
+  overflow-x: hidden;
 }
 
 .screen {
@@ -65,6 +66,7 @@ img {
   animation: pageIn 180ms ease;
 }
 
+[hidden],
 .screen[hidden],
 .modal-backdrop[hidden],
 .empty-state[hidden] {
@@ -372,7 +374,8 @@ input:focus {
 .receiver-profile-wrap {
   display: grid;
   gap: 14px;
-  padding: 18px 14px 30px;
+  padding: 18px 14px max(30px, env(safe-area-inset-bottom));
+  overflow-y: auto;
 }
 
 .receiver-hero {
@@ -499,6 +502,20 @@ input:focus {
   padding: 14px;
 }
 
+.group-icon-picker {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.group-icon-picker img {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--panel-soft);
+}
+
 .member-picker,
 .member-list {
   display: grid;
@@ -515,6 +532,16 @@ input:focus {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: white;
+}
+
+.member-actions {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.text-btn.danger {
+  color: var(--danger);
 }
 
 .member-choice img,
@@ -787,6 +814,10 @@ input:focus {
   border-bottom: 1px solid var(--line);
 }
 
+.chat-header .chat-person-btn {
+  flex: 1;
+}
+
 .chat-header img,
 .chat-person-btn img {
   width: 44px;
@@ -910,7 +941,7 @@ input:focus {
   cursor: pointer;
 }
 
-.attach-btn input {
+.hidden-file {
   display: none;
 }
 
@@ -930,6 +961,23 @@ input:focus {
   gap: 6px;
   margin-bottom: 7px;
   cursor: pointer;
+}
+
+.file-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-width: min(240px, 68vw);
+}
+
+.file-card button {
+  min-height: 34px;
+  border-radius: var(--radius);
+  background: var(--panel-soft);
+  color: var(--accent-dark);
+  font-weight: 800;
+  padding: 0 10px;
 }
 
 .album-cell {
@@ -1113,12 +1161,27 @@ input:focus {
   display: grid;
   justify-items: end;
   gap: 8px;
+  position: relative;
 }
 
 .viewer-photo-item img {
   width: 100%;
   max-height: 82vh;
   object-fit: contain;
+}
+
+.viewer-download-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--accent-dark);
+  font-size: 1.25rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
 .edited-label {
@@ -1132,7 +1195,7 @@ input:focus {
   z-index: 28;
   display: grid;
   place-items: end center;
-  padding: 14px;
+  padding: 14px 14px max(14px, env(safe-area-inset-bottom));
   background: rgba(16, 32, 28, 0.34);
 }
 
@@ -1151,10 +1214,11 @@ input:focus {
 .action-sheet {
   width: min(100%, 430px);
   display: grid;
-  overflow: hidden;
+  overflow: auto;
   border-radius: var(--radius);
   background: white;
   box-shadow: var(--shadow);
+  max-height: calc(100vh - 36px);
 }
 
 .action-sheet button {

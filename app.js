@@ -16,8 +16,10 @@ import {
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
   limit,
   onSnapshot,
@@ -148,6 +150,7 @@ const els = {
   groupNameInput: $("group-name-input"),
   groupDescriptionInput: $("group-description-input"),
   groupPhotoInput: $("group-photo-input"),
+  groupPhotoPreview: $("group-photo-preview"),
   groupMemberPicker: $("group-member-picker"),
   searchScreen: $("search-screen"),
   closeSearchBtn: $("close-search-btn"),
@@ -175,17 +178,23 @@ const els = {
   editGroupName: $("edit-group-name"),
   editGroupDescription: $("edit-group-description"),
   editGroupPhoto: $("edit-group-photo"),
+  editGroupPhotoPreview: $("edit-group-photo-preview"),
   groupMemberVisibility: $("group-member-visibility"),
   groupMembersCard: $("group-members-card"),
   groupMemberCount: $("group-member-count"),
   groupMemberList: $("group-member-list"),
+  groupAddMemberPicker: $("group-add-member-picker"),
+  leaveGroupBtn: $("leave-group-btn"),
+  deleteGroupBtn: $("delete-group-btn"),
   mediaGalleryCard: $("media-gallery-card"),
   mediaCount: $("media-count"),
   mediaGallery: $("media-gallery"),
   messages: $("messages"),
   messageForm: $("message-form"),
   messageInput: $("message-input"),
+  attachMenuBtn: $("attach-menu-btn"),
   messagePhotoInput: $("message-photo-input"),
+  messageFileInput: $("message-file-input"),
   sendMessageBtn: $("send-message-btn"),
   replyPreview: $("reply-preview"),
   replyTitle: $("reply-title"),
@@ -210,6 +219,15 @@ const els = {
   deleteForMeBtn: $("delete-for-me-btn"),
   deleteForEveryoneBtn: $("delete-for-everyone-btn"),
   deleteCancelBtn: $("delete-cancel-btn"),
+  chatMenuBtn: $("chat-menu-btn"),
+  chatMenuActions: $("chat-menu-actions"),
+  chatMenuPinBtn: $("chat-menu-pin-btn"),
+  chatMenuProfileBtn: $("chat-menu-profile-btn"),
+  chatMenuCancelBtn: $("chat-menu-cancel-btn"),
+  attachActions: $("attach-actions"),
+  attachImageBtn: $("attach-image-btn"),
+  attachFileBtn: $("attach-file-btn"),
+  attachCancelBtn: $("attach-cancel-btn"),
   toast: $("toast"),
 };
 
@@ -298,6 +316,12 @@ function formatLastSeen(value) {
   const today = new Date();
   const sameDay = date.toDateString() === today.toDateString();
   return `${sameDay ? "Last seen today" : "Last seen"} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function formatMobileDisplay(mobile) {
+  const normalized = normalizeMobile(mobile);
+  if (/^91[6-9]\d{9}$/.test(normalized)) return `+91 ${normalized.slice(2)}`;
+  return mobile || "-";
 }
 
 function canSee(profile, field) {
@@ -420,7 +444,7 @@ function renderSettings(profile = state.currentProfile) {
   els.settingsAbout.textContent = profile.about || "Hey there! I am using ZopChat.";
   els.settingsNameValue.textContent = profile.name || "-";
   els.settingsAboutValue.textContent = profile.about || "-";
-  els.settingsMobileValue.textContent = profile.mobile || "-";
+  els.settingsMobileValue.textContent = formatMobileDisplay(profile.mobile);
   els.privacyPhoto.value = profile.privacy?.photo || "everyone";
   els.privacyAbout.value = profile.privacy?.about || "everyone";
   els.privacyLastSeen.value = profile.privacy?.lastSeen || "everyone";
@@ -516,6 +540,20 @@ async function uploadProfilePhoto(file) {
 
 async function uploadImageToCloudinary(file) {
   return uploadProfilePhoto(file);
+}
+
+async function uploadFileToCloudinary(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  const response = await fetch(CLOUDINARY_API.replace("/image/upload", "/raw/upload"), {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) throw new Error("File upload failed.");
+  const data = await response.json();
+  if (!data.secure_url) throw new Error("Cloudinary did not return a file URL.");
+  return data.secure_url;
 }
 
 async function handleProfileSave(event) {
@@ -718,16 +756,10 @@ function renderChatList(chats) {
       </div>
       <div class="chat-side">
         <p>${escapeHtml(formatTime(chat.lastMessageAt))}</p>
-        <button class="pin-btn" type="button" data-pin-chat="${escapeHtml(chat.id)}">${state.currentProfile?.pinnedChats?.[chat.id] ? "Unpin" : "Pin"}</button>
       </div>
     `;
     button.addEventListener("click", (event) => {
-      if (event.target.closest("[data-pin-chat]")) return;
       openChat(chat.id, chat.other, chat);
-    });
-    button.querySelector("[data-pin-chat]").addEventListener("click", (event) => {
-      event.stopPropagation();
-      togglePinChat(chat.id);
     });
     els.chatList.appendChild(button);
   });
@@ -754,7 +786,7 @@ function renderSearchChatList() {
       <img src="${escapeHtml(chat.other?.photoURL || DEFAULT_AVATAR)}" alt="${escapeHtml(chat.other?.name || "User")}" />
       <div class="chat-meta">
         <h4>${escapeHtml(chat.other?.name || "ZopChat User")}</h4>
-        <p>${escapeHtml(chat.other?.mobile || chat.lastMessage || "")}</p>
+        <p>${escapeHtml(formatMobileDisplay(chat.other?.mobile) || chat.lastMessage || "")}</p>
       </div>
       <div class="chat-side">
         <p>${escapeHtml(formatTime(chat.lastMessageAt))}</p>
@@ -998,7 +1030,7 @@ async function handleSearch(event) {
         <img src="${escapeHtml(profile.photoURL || DEFAULT_AVATAR)}" alt="${escapeHtml(profile.name)}" />
         <div>
           <h4>${escapeHtml(profile.name)}</h4>
-          <p>${escapeHtml(profile.mobile)}</p>
+          <p>${escapeHtml(formatMobileDisplay(profile.mobile))}</p>
         </div>
         <button class="primary-btn compact" id="result-start-chat" type="button">Start Chat</button>
       </div>
@@ -1076,7 +1108,7 @@ function renderInviteCard(mobile) {
     <div class="result-card invite-card">
       <img src="${INVITE_AVATAR}" alt="Invite user" />
       <div>
-        <h4>${escapeHtml(mobile)}</h4>
+        <h4>${escapeHtml(formatMobileDisplay(mobile))}</h4>
         <p>This number is not registered on ZopChat yet.</p>
       </div>
       <button class="primary-btn compact" id="invite-user-btn" type="button">Invite</button>
@@ -1166,13 +1198,18 @@ async function createGroup(event) {
     showToast("Select at least one member.", "error");
     return;
   }
+  let groupPhotoURL = DEFAULT_AVATAR;
+  const groupPhotoFile = els.groupPhotoInput.files?.[0];
+  if (groupPhotoFile) {
+    groupPhotoURL = await uploadImageToCloudinary(groupPhotoFile);
+  }
   const now = serverTimestamp();
   const chatRef = doc(collection(db, "chats"));
   await setDoc(chatRef, {
     type: "group",
     groupName: name,
     groupDescription: els.groupDescriptionInput.value.trim(),
-    groupPhotoURL: els.groupPhotoInput.value.trim() || DEFAULT_AVATAR,
+    groupPhotoURL,
     creatorId: state.currentUser.uid,
     admins: { [state.currentUser.uid]: true },
     memberVisibility: "everyone",
@@ -1187,7 +1224,7 @@ async function createGroup(event) {
   });
   els.createGroupForm.hidden = true;
   showToast("Group created.");
-  openChat(chatRef.id, null, { id: chatRef.id, type: "group", groupName: name, groupPhotoURL: els.groupPhotoInput.value.trim() || DEFAULT_AVATAR, members });
+  openChat(chatRef.id, null, { id: chatRef.id, type: "group", groupName: name, groupPhotoURL, members });
 }
 
 function openChat(chatId, receiver, chatMeta = null) {
@@ -1329,6 +1366,7 @@ function messagePreview(message) {
   if (!message) return "";
   if (message.deletedForEveryone) return "This message was deleted";
   if (message.type === "image") return (message.imageURLs?.length || 1) > 1 ? `${message.imageURLs.length} photos` : "Photo";
+  if (message.type === "file") return message.fileName || "File";
   return message.text || "";
 }
 
@@ -1352,6 +1390,8 @@ function buildMessageElement(id, message) {
       : "";
   const textMarkup = deleted
     ? `<p class="deleted-message">This message was deleted</p>`
+    : message.type === "file"
+      ? `<div class="file-card"><strong>${escapeHtml(message.fileName || "File")}</strong><button type="button" data-file-url="${escapeHtml(message.fileURL || "")}">Download</button></div>`
     : message.text
       ? `<p>${escapeHtml(message.text)}</p>`
       : "";
@@ -1377,7 +1417,15 @@ function buildMessageElement(id, message) {
 
   const photoAlbum = row.querySelector("[data-photo-album]");
   if (photoAlbum) {
-    photoAlbum.addEventListener("click", () => openPhotoViewer(getMessageImages(message)));
+    photoAlbum.addEventListener("click", (event) => {
+      if (state.selectedMessageIds.size) {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleMessageSelection(id);
+        return;
+      }
+      openPhotoViewer(getMessageImages(message));
+    });
   }
   const emoji = row.querySelector("[data-emoji-for]");
   if (emoji) {
@@ -1386,6 +1434,9 @@ function buildMessageElement(id, message) {
       openReactionPicker(id);
     });
   }
+  row.querySelector("[data-file-url]")?.addEventListener("click", () => {
+    window.open(message.fileURL, "_blank", "noopener");
+  });
   row.querySelectorAll("[data-reaction-owner]").forEach((reaction) => {
     reaction.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1595,6 +1646,48 @@ async function handleSendPhoto() {
   }
 }
 
+async function handleSendFiles() {
+  const files = Array.from(els.messageFileInput.files || []);
+  els.messageFileInput.value = "";
+  if (!files.length || !state.activeChatId || !state.currentUser) return;
+  if (isBlockedWith(state.activeReceiver)) {
+    showToast("Messaging is blocked for this chat.", "error");
+    return;
+  }
+  setButtonLoading(els.sendMessageBtn, true, "...");
+  try {
+    for (const file of files) {
+      const fileURL = await uploadFileToCloudinary(file);
+      const now = serverTimestamp();
+      await addDoc(collection(db, "chats", state.activeChatId, "messages"), {
+        senderId: state.currentUser.uid,
+        text: "",
+        type: "file",
+        fileURL,
+        fileName: file.name || "File",
+        fileSize: file.size || 0,
+        createdAt: now,
+        status: "sent",
+        replyTo: state.replyTo,
+        readBy: { [state.currentUser.uid]: true },
+      });
+      await updateDoc(doc(db, "chats", state.activeChatId), {
+        lastMessage: file.name || "File",
+        lastMessageType: "file",
+        lastMessageAt: now,
+        lastMessageSenderId: state.currentUser.uid,
+        updatedAt: now,
+      });
+    }
+    clearReply();
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "File was not sent.", "error");
+  } finally {
+    setButtonLoading(els.sendMessageBtn, false);
+  }
+}
+
 async function downloadImage(url) {
   try {
     const response = await fetch(url);
@@ -1621,7 +1714,7 @@ function openPhotoViewer(urls) {
       (url, index) => `
         <div class="viewer-photo-item">
           <img src="${escapeHtml(url)}" alt="Shared photo ${index + 1}" />
-          <button class="primary-btn compact" type="button" data-save-photo="${escapeHtml(url)}">Save</button>
+          <button class="viewer-download-btn" type="button" title="Download" data-save-photo="${escapeHtml(url)}">⇩</button>
         </div>
       `,
     )
@@ -1936,8 +2029,8 @@ async function deleteSelectedForEveryone() {
   }
 }
 
-function openReceiverProfileScreen(profile) {
-  if (state.activeChatMeta?.type === "group") {
+function openReceiverProfileScreen(profile, forceUserProfile = false) {
+  if (state.activeChatMeta?.type === "group" && !forceUserProfile) {
     openGroupProfileScreen();
     return;
   }
@@ -1945,8 +2038,8 @@ function openReceiverProfileScreen(profile) {
   els.fullUserAvatar.src = canSee(profile, "photo") ? profile.photoURL || DEFAULT_AVATAR : DEFAULT_AVATAR;
   els.fullUserName.textContent = profile.name || "ZopChat User";
   els.fullUserAbout.textContent = canSee(profile, "about") ? profile.about || "Hey there! I am using ZopChat." : "About is private";
-  els.fullUserMobile.textContent = profile.mobile || "-";
-  els.fullUserEmail.textContent = profile.email || "-";
+  els.fullUserMobile.textContent = formatMobileDisplay(profile.mobile);
+  els.fullUserEmail.closest(".setting-row").hidden = true;
   els.fullUserStatus.textContent = profile.online ? "Online" : canSee(profile, "lastSeen") ? formatLastSeen(profile.lastSeen) : "Offline";
   els.blockUserBtn.textContent = state.currentProfile?.blockedUsers?.[profile.uid] ? "Unblock user" : "Block user";
   els.groupEditForm.hidden = true;
@@ -1963,13 +2056,14 @@ async function openGroupProfileScreen() {
   els.fullUserName.textContent = chat.groupName || "Group";
   els.fullUserAbout.textContent = chat.groupDescription || "No description";
   els.fullUserMobile.textContent = "Group chat";
+  els.fullUserEmail.closest(".setting-row").hidden = false;
   els.fullUserEmail.textContent = `${chat.members?.length || 0} members`;
   els.fullUserStatus.textContent = isAdmin ? "You are admin" : "Member";
   els.blockUserBtn.style.display = "none";
   els.groupEditForm.hidden = !isAdmin;
   els.editGroupName.value = chat.groupName || "";
   els.editGroupDescription.value = chat.groupDescription || "";
-  els.editGroupPhoto.value = chat.groupPhotoURL || "";
+  els.editGroupPhotoPreview.src = chat.groupPhotoURL || DEFAULT_AVATAR;
   els.groupMemberVisibility.value = chat.memberVisibility || "everyone";
   await renderGroupMembers(chat, isAdmin);
   renderMediaGallery();
@@ -1982,6 +2076,20 @@ async function renderGroupMembers(chat, isAdmin) {
   if (!canSeeMembers) return;
   els.groupMemberCount.textContent = `${chat.members?.length || 0}`;
   els.groupMemberList.innerHTML = "";
+  els.groupAddMemberPicker.innerHTML = "";
+  els.deleteGroupBtn.hidden = !isAdmin;
+  if (isAdmin) {
+    state.chats
+      .filter((c) => c.type !== "group" && c.other && !(chat.memberMap || {})[c.other.uid])
+      .forEach((c) => {
+        const button = document.createElement("button");
+        button.className = "member-choice";
+        button.type = "button";
+        button.innerHTML = `<img src="${escapeHtml(c.other.photoURL || DEFAULT_AVATAR)}" alt="" /><span>Add ${escapeHtml(c.other.name || c.other.mobile || "User")}</span><strong>+</strong>`;
+        button.addEventListener("click", () => addGroupMember(c.other.uid));
+        els.groupAddMemberPicker.appendChild(button);
+      });
+  }
   for (const uid of chat.members || []) {
     const profile = await getUserProfile(uid);
     const row = document.createElement("div");
@@ -1989,9 +2097,17 @@ async function renderGroupMembers(chat, isAdmin) {
     row.innerHTML = `
       <img src="${escapeHtml(profile?.photoURL || DEFAULT_AVATAR)}" alt="${escapeHtml(profile?.name || "User")}" />
       <span>${escapeHtml(profile?.name || uid)} ${chat.admins?.[uid] ? "(admin)" : ""}</span>
-      ${isAdmin && uid !== state.currentUser.uid ? `<button class="text-btn" data-make-admin="${escapeHtml(uid)}" type="button">${chat.admins?.[uid] ? "Admin" : "Make admin"}</button>` : ""}
+      <div class="member-actions">
+        ${isAdmin && uid !== state.currentUser.uid ? `<button class="text-btn" data-toggle-admin="${escapeHtml(uid)}" type="button">${chat.admins?.[uid] ? "Remove admin" : "Make admin"}</button>` : ""}
+        ${isAdmin && uid !== state.currentUser.uid ? `<button class="text-btn danger" data-remove-member="${escapeHtml(uid)}" type="button">Remove</button>` : ""}
+      </div>
     `;
-    row.querySelector("[data-make-admin]")?.addEventListener("click", () => makeGroupAdmin(uid));
+    row.addEventListener("click", async (event) => {
+      if (event.target.closest("button")) return;
+      openReceiverProfileScreen(await getUserProfile(uid), true);
+    });
+    row.querySelector("[data-toggle-admin]")?.addEventListener("click", () => toggleGroupAdmin(uid));
+    row.querySelector("[data-remove-member]")?.addEventListener("click", () => removeGroupMember(uid));
     els.groupMemberList.appendChild(row);
   }
 }
@@ -2011,6 +2127,7 @@ function renderMediaGallery() {
 
 function backToChatFromReceiverProfile() {
   els.blockUserBtn.style.display = "";
+  els.fullUserEmail.closest(".setting-row").hidden = false;
   if (state.activeChatId) {
     showScreen(els.chatScreen);
   } else {
@@ -2022,24 +2139,72 @@ async function saveGroupProfile(event) {
   event.preventDefault();
   const chat = state.activeChatData || state.activeChatMeta;
   if (!chat?.admins?.[state.currentUser.uid]) return;
+  let groupPhotoURL = chat.groupPhotoURL || DEFAULT_AVATAR;
+  const file = els.editGroupPhoto.files?.[0];
+  if (file) {
+    groupPhotoURL = await uploadImageToCloudinary(file);
+  }
   await updateDoc(doc(db, "chats", state.activeChatId), {
     groupName: els.editGroupName.value.trim() || "Group",
     groupDescription: els.editGroupDescription.value.trim(),
-    groupPhotoURL: els.editGroupPhoto.value.trim() || DEFAULT_AVATAR,
+    groupPhotoURL,
     memberVisibility: els.groupMemberVisibility.value,
     updatedAt: serverTimestamp(),
   });
   showToast("Group updated.");
 }
 
-async function makeGroupAdmin(uid) {
+async function toggleGroupAdmin(uid) {
   const chat = state.activeChatData || state.activeChatMeta;
   if (!chat?.admins?.[state.currentUser.uid]) return;
+  const isAdmin = Boolean(chat.admins?.[uid]);
   await updateDoc(doc(db, "chats", state.activeChatId), {
-    [`admins.${uid}`]: true,
+    [`admins.${uid}`]: !isAdmin,
     updatedAt: serverTimestamp(),
   });
-  showToast("Admin added.");
+  showToast(isAdmin ? "Admin removed." : "Admin added.");
+}
+
+async function addGroupMember(uid) {
+  const chat = state.activeChatData || state.activeChatMeta;
+  if (!chat?.admins?.[state.currentUser.uid]) return;
+  const members = Array.from(new Set([...(chat.members || []), uid]));
+  await updateDoc(doc(db, "chats", state.activeChatId), {
+    members,
+    [`memberMap.${uid}`]: true,
+    updatedAt: serverTimestamp(),
+  });
+  showToast("Member added.");
+}
+
+async function removeGroupMember(uid) {
+  const chat = state.activeChatData || state.activeChatMeta;
+  if (!chat?.admins?.[state.currentUser.uid]) return;
+  const members = (chat.members || []).filter((member) => member !== uid);
+  await updateDoc(doc(db, "chats", state.activeChatId), {
+    members,
+    [`memberMap.${uid}`]: false,
+    [`admins.${uid}`]: false,
+    updatedAt: serverTimestamp(),
+  });
+  showToast("Member removed.");
+}
+
+async function leaveGroup() {
+  const chat = state.activeChatData || state.activeChatMeta;
+  if (!chat?.members?.includes(state.currentUser.uid)) return;
+  await removeGroupMember(state.currentUser.uid);
+  backToHome();
+}
+
+async function deleteGroup() {
+  const chat = state.activeChatData || state.activeChatMeta;
+  if (!chat?.admins?.[state.currentUser.uid]) return;
+  const messagesSnap = await getDocs(collection(db, "chats", state.activeChatId, "messages"));
+  await Promise.all(messagesSnap.docs.map((messageDoc) => deleteDoc(messageDoc.ref)));
+  await deleteDoc(doc(db, "chats", state.activeChatId));
+  showToast("Group deleted.");
+  backToHome();
 }
 
 function backToHome() {
@@ -2136,6 +2301,11 @@ function bindEvents() {
     els.createGroupForm.hidden = !els.createGroupForm.hidden;
   });
   els.createGroupForm.addEventListener("submit", createGroup);
+  els.groupPhotoPreview.src = DEFAULT_AVATAR;
+  els.groupPhotoInput.addEventListener("change", () => {
+    const file = els.groupPhotoInput.files?.[0];
+    if (file) els.groupPhotoPreview.src = URL.createObjectURL(file);
+  });
   els.closeSearchBtn.addEventListener("click", closeSearchPage);
   els.searchForm.addEventListener("submit", handleSearch);
   els.searchMobile.addEventListener("input", handleSearchInput);
@@ -2143,9 +2313,52 @@ function bindEvents() {
   els.openReceiverProfileBtn.addEventListener("click", () => openReceiverProfileScreen(state.activeReceiver));
   els.receiverProfileBackBtn.addEventListener("click", backToChatFromReceiverProfile);
   els.groupEditForm.addEventListener("submit", saveGroupProfile);
+  els.editGroupPhoto.addEventListener("change", () => {
+    const file = els.editGroupPhoto.files?.[0];
+    if (file) els.editGroupPhotoPreview.src = URL.createObjectURL(file);
+  });
+  els.leaveGroupBtn.addEventListener("click", leaveGroup);
+  els.deleteGroupBtn.addEventListener("click", deleteGroup);
   els.blockUserBtn.addEventListener("click", toggleBlockActiveUser);
   els.messageForm.addEventListener("submit", handleSendMessage);
   els.messagePhotoInput.addEventListener("change", handleSendPhoto);
+  els.messageFileInput.addEventListener("change", handleSendFiles);
+  els.attachMenuBtn.addEventListener("click", () => {
+    els.attachActions.hidden = false;
+  });
+  els.attachImageBtn.addEventListener("click", () => {
+    els.attachActions.hidden = true;
+    els.messagePhotoInput.click();
+  });
+  els.attachFileBtn.addEventListener("click", () => {
+    els.attachActions.hidden = true;
+    els.messageFileInput.click();
+  });
+  els.attachCancelBtn.addEventListener("click", () => {
+    els.attachActions.hidden = true;
+  });
+  els.attachActions.addEventListener("click", (event) => {
+    if (event.target === els.attachActions) els.attachActions.hidden = true;
+  });
+  els.chatMenuBtn.addEventListener("click", () => {
+    const pinned = Boolean(state.currentProfile?.pinnedChats?.[state.activeChatId]);
+    els.chatMenuPinBtn.textContent = pinned ? "Unpin chat" : "Pin chat";
+    els.chatMenuActions.hidden = false;
+  });
+  els.chatMenuPinBtn.addEventListener("click", () => {
+    togglePinChat(state.activeChatId);
+    els.chatMenuActions.hidden = true;
+  });
+  els.chatMenuProfileBtn.addEventListener("click", () => {
+    els.chatMenuActions.hidden = true;
+    openReceiverProfileScreen(state.activeReceiver);
+  });
+  els.chatMenuCancelBtn.addEventListener("click", () => {
+    els.chatMenuActions.hidden = true;
+  });
+  els.chatMenuActions.addEventListener("click", (event) => {
+    if (event.target === els.chatMenuActions) els.chatMenuActions.hidden = true;
+  });
   els.messageInput.addEventListener("input", handleTypingInput);
   els.cancelReplyBtn.addEventListener("click", clearReply);
   els.closePhotoViewerBtn.addEventListener("click", closePhotoViewer);
