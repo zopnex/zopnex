@@ -1,436 +1,898 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f9f7a" />
-    <title>ZopChat</title>
-    <link rel="preconnect" href="https://www.gstatic.com" />
-    <link rel="preconnect" href="https://api.cloudinary.com" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <div id="app" class="app-shell" aria-live="polite">
-      <main class="screen is-active" id="loading-screen">
-        <div class="brand-mark">Z</div>
-        <h1>ZopChat</h1>
-        <div class="spinner" aria-label="Loading"></div>
-      </main>
-
-      <main class="screen auth-screen" id="login-screen" hidden>
-        <section class="auth-panel">
-          <div class="brand-lockup">
-            <div class="brand-mark">Z</div>
-            <div>
-              <h1>ZopChat</h1>
-              <p>Private, simple chats for your circle.</p>
-            </div>
-          </div>
-
-          <button class="primary-btn google-btn" id="google-login-btn" type="button">
-            <span class="google-dot">G</span>
-            Continue with Google
-          </button>
-
-          <div class="divider"><span>or</span></div>
-
-          <form class="form-stack" id="mobile-login-form" novalidate>
-            <label>
-              <span>Mobile number</span>
-              <input id="login-mobile" inputmode="tel" autocomplete="tel" placeholder="9876543210" />
-            </label>
-            <label>
-              <span>ZopChat password</span>
-              <input id="login-password" type="password" autocomplete="current-password" placeholder="Minimum 6 characters" />
-            </label>
-            <button class="secondary-btn" id="mobile-login-btn" type="submit">Login with mobile</button>
-          </form>
-        </section>
-      </main>
-
-      <main class="screen profile-screen" id="profile-screen" hidden>
-        <section class="profile-panel">
-          <div class="topline">
-            <div>
-              <p class="eyebrow">Profile setup</p>
-              <h2>Complete ZopChat</h2>
-            </div>
-            <button class="icon-btn" id="profile-logout-btn" title="Logout" type="button">×</button>
-          </div>
-
-          <form class="form-stack" id="profile-form" novalidate>
-            <div class="photo-picker">
-              <img id="profile-preview" alt="Profile preview" />
-              <label class="photo-action">
-                <input id="profile-photo-input" type="file" accept="image/*" />
-                Choose photo
-              </label>
-            </div>
-
-            <label>
-              <span>Name</span>
-              <input id="profile-name" autocomplete="name" placeholder="Your name" />
-            </label>
-            <label>
-              <span>Mobile number</span>
-              <input id="profile-mobile" inputmode="tel" autocomplete="tel" placeholder="9876543210" />
-            </label>
-            <label>
-              <span>ZopChat password</span>
-              <input id="profile-password" type="password" autocomplete="new-password" placeholder="Minimum 6 characters" />
-            </label>
-            <button class="primary-btn" id="save-profile-btn" type="submit">Continue</button>
-          </form>
-        </section>
-      </main>
-
-      <main class="screen home-screen" id="home-screen" hidden>
-        <header class="app-header">
-          <div class="header-brand">
-            <div class="brand-mark small">Z</div>
-            <h2>ZopChat</h2>
-          </div>
-          <div class="header-actions">
-            <button class="icon-btn" id="open-search-btn" title="Search user" type="button">⌕</button>
-            <button class="avatar-btn" id="open-profile-btn" title="Your profile" type="button">
-              <img id="home-avatar" alt="Your profile" />
-            </button>
-          </div>
-        </header>
-
-        <section class="chat-list-wrap">
-          <div class="section-title">
-            <h3>Recent chats</h3>
-            <button class="text-btn" id="start-chat-btn" type="button">Start New Chat</button>
-          </div>
-          <div class="chat-list" id="chat-list"></div>
-          <div class="empty-state" id="empty-chats" hidden>
-            <div class="empty-icon">⌕</div>
-            <p>No chats yet. Search a mobile number to start chatting.</p>
-            <button class="primary-btn compact" id="empty-start-chat-btn" type="button">Start New Chat</button>
-          </div>
-        </section>
-      </main>
-
-      <main class="screen search-screen" id="search-screen" hidden>
-        <header class="app-header">
-          <div class="header-brand">
-            <button class="icon-btn" id="close-search-btn" title="Back" type="button">‹</button>
-            <h2>New chat</h2>
-          </div>
-        </header>
-
-        <section class="search-page-wrap">
-          <form class="search-form page-search" id="search-form" novalidate>
-            <input id="search-mobile" inputmode="tel" autocomplete="tel" placeholder="Enter full mobile number" />
-            <button class="primary-btn compact" id="search-btn" type="submit">Search</button>
-          </form>
-          <div class="search-result" id="search-result"></div>
-          <button class="secondary-btn" id="open-create-group-btn" type="button">Create group</button>
-          <form class="settings-card create-group-form" id="create-group-form" hidden>
-            <input id="group-name-input" placeholder="Group name" />
-            <input id="group-description-input" placeholder="Group description" />
-            <div class="group-icon-picker">
-              <img id="group-photo-preview" alt="Group icon preview" />
-              <label class="photo-action">
-                <input id="group-photo-input" type="file" accept="image/*" />
-                Choose group icon
-              </label>
-            </div>
-            <label>
-              <span>Members</span>
-              <div class="member-picker" id="group-member-picker"></div>
-            </label>
-            <button class="primary-btn compact" type="submit">Create group</button>
-          </form>
-          <div class="section-title search-list-title">
-            <h3>People you chatted with</h3>
-          </div>
-          <div class="chat-list" id="search-chat-list"></div>
-          <div class="empty-state" id="empty-search-chats" hidden>
-            <div class="empty-icon">⌕</div>
-            <p>No chatted users yet. Enter a full mobile number to start a new chat.</p>
-          </div>
-        </section>
-      </main>
-
-      <main class="screen settings-screen" id="settings-screen" hidden>
-        <header class="app-header">
-          <div class="header-brand">
-            <button class="icon-btn" id="settings-back-btn" title="Back" type="button">‹</button>
-            <h2>Settings</h2>
-          </div>
-        </header>
-
-        <section class="settings-wrap">
-          <div class="settings-profile">
-            <img id="settings-avatar" alt="Your profile" />
-            <label class="photo-action">
-              <input id="settings-photo-input" type="file" accept="image/*" />
-              Change photo
-            </label>
-            <h3 id="settings-name">Your name</h3>
-            <p id="settings-about">Hey there! I am using ZopChat.</p>
-          </div>
-
-          <div class="settings-card">
-            <div class="setting-row">
-              <div>
-                <span>Name</span>
-                <strong id="settings-name-value">-</strong>
-              </div>
-              <button class="text-btn" data-edit-field="name" type="button">Edit</button>
-            </div>
-            <form class="inline-edit" id="edit-name-form" hidden>
-              <input id="edit-name-input" placeholder="Your name" />
-              <button class="primary-btn compact" type="submit">Save</button>
-            </form>
-
-            <div class="setting-row">
-              <div>
-                <span>Description</span>
-                <strong id="settings-about-value">-</strong>
-              </div>
-              <button class="text-btn" data-edit-field="about" type="button">Edit</button>
-            </div>
-            <form class="inline-edit" id="edit-about-form" hidden>
-              <input id="edit-about-input" placeholder="About" />
-              <button class="primary-btn compact" type="submit">Save</button>
-            </form>
-
-            <div class="setting-row">
-              <div>
-                <span>Mobile number</span>
-                <strong id="settings-mobile-value">-</strong>
-              </div>
-              <button class="text-btn" data-edit-field="mobile" type="button">Update mobile number</button>
-            </div>
-            <form class="mobile-update" id="edit-mobile-form" hidden>
-              <input id="edit-mobile-input" inputmode="tel" placeholder="New mobile number" />
-              <input id="edit-mobile-password" type="password" placeholder="ZopChat password" />
-              <div class="inline-actions">
-                <button class="secondary-btn compact" id="send-email-verify-btn" type="button">Send email verification</button>
-                <button class="primary-btn compact" type="submit">Save number</button>
-              </div>
-              <p>Email verification must be complete before updating your mobile number.</p>
-            </form>
-          </div>
-
-          <div class="settings-card">
-            <button class="setting-link" id="privacy-btn" type="button">Privacy</button>
-            <form class="privacy-panel" id="privacy-form" hidden>
-              <label>
-                <span>Profile photo</span>
-                <select id="privacy-photo">
-                  <option value="everyone">Everyone</option>
-                  <option value="nobody">Nobody</option>
-                </select>
-              </label>
-              <label>
-                <span>Description</span>
-                <select id="privacy-about">
-                  <option value="everyone">Everyone</option>
-                  <option value="nobody">Nobody</option>
-                </select>
-              </label>
-              <label>
-                <span>Last seen</span>
-                <select id="privacy-last-seen">
-                  <option value="everyone">Everyone</option>
-                  <option value="nobody">Nobody</option>
-                </select>
-              </label>
-              <button class="primary-btn compact" type="submit">Save privacy</button>
-            </form>
-            <button class="setting-link" id="block-list-btn" type="button">Block list</button>
-            <button class="setting-link" id="qr-btn" type="button">My QR code</button>
-            <div class="qr-card" id="qr-card" hidden>
-              <img id="profile-qr" alt="Profile QR code" />
-              <p>Share this QR to start a ZopChat chat.</p>
-            </div>
-            <button class="setting-link" id="wallpaper-btn" type="button">Chat wallpaper</button>
-            <form class="privacy-panel" id="wallpaper-form" hidden>
-              <select id="wallpaper-select">
-                <option value="default">Default</option>
-                <option value="mint">Mint</option>
-                <option value="pearl">Pearl</option>
-                <option value="sky">Sky</option>
-              </select>
-              <button class="primary-btn compact" type="submit">Save wallpaper</button>
-            </form>
-            <button class="setting-link" id="notifications-btn" type="button">Notifications</button>
-            <button class="setting-link danger" id="settings-logout-btn" type="button">Log out</button>
-          </div>
-        </section>
-      </main>
-
-      <main class="screen chat-screen" id="chat-screen" hidden>
-        <header class="chat-header">
-          <button class="icon-btn" id="back-home-btn" title="Back" type="button">‹</button>
-          <button class="chat-person-btn" id="open-receiver-profile-btn" type="button">
-            <img id="receiver-avatar" alt="Receiver profile" />
-            <div>
-              <h3 id="receiver-name">Chat</h3>
-              <p id="receiver-status">Online</p>
-            </div>
-          </button>
-          <button class="icon-btn" id="chat-menu-btn" title="Chat menu" type="button">⋮</button>
-        </header>
-        <section class="messages" id="messages"></section>
-        <form class="message-composer" id="message-form" novalidate>
-          <div class="reply-preview" id="reply-preview" hidden>
-            <div>
-              <strong id="reply-title">Reply</strong>
-              <p id="reply-text"></p>
-            </div>
-            <button class="icon-btn mini" id="cancel-reply-btn" title="Cancel reply" type="button">×</button>
-          </div>
-          <button class="attach-btn" id="attach-menu-btn" title="Attach" type="button">＋</button>
-          <label class="hidden-file">
-            <input id="message-photo-input" type="file" accept="image/*" multiple />
-          </label>
-          <label class="hidden-file">
-            <input id="message-file-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,*/*" multiple />
-          </label>
-          <input id="message-input" autocomplete="off" placeholder="Message" />
-          <button class="send-btn" id="send-message-btn" title="Send" type="submit">➤</button>
-        </form>
-      </main>
-
-      <main class="screen receiver-profile-screen" id="receiver-profile-screen" hidden>
-        <header class="app-header">
-          <div class="header-brand">
-            <button class="icon-btn" id="receiver-profile-back-btn" title="Back" type="button">‹</button>
-            <h2>Profile</h2>
-          </div>
-        </header>
-        <section class="receiver-profile-wrap">
-          <div class="receiver-hero">
-            <img id="full-user-avatar" alt="User profile" />
-            <h2 id="full-user-name">ZopChat User</h2>
-            <p id="full-user-about">Hey there! I am using ZopChat.</p>
-          </div>
-          <form class="settings-card group-edit-card" id="group-edit-form" hidden>
-            <input id="edit-group-name" placeholder="Group name" />
-            <input id="edit-group-description" placeholder="Group description" />
-            <div class="group-icon-picker">
-              <img id="edit-group-photo-preview" alt="Group icon preview" />
-              <label class="photo-action">
-                <input id="edit-group-photo" type="file" accept="image/*" />
-                Change group icon
-              </label>
-            </div>
-            <label>
-              <span>Members visibility</span>
-              <select id="group-member-visibility">
-                <option value="everyone">Everyone can see members</option>
-                <option value="admins">Only admins can see members</option>
-              </select>
-            </label>
-            <button class="primary-btn compact" type="submit">Save group</button>
-          </form>
-          <div class="settings-card">
-            <div class="setting-row">
-              <div>
-                <span>Mobile</span>
-                <strong id="full-user-mobile">-</strong>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div>
-                <span>Email</span>
-                <strong id="full-user-email">-</strong>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div>
-                <span>Status</span>
-                <strong id="full-user-status">-</strong>
-              </div>
-            </div>
-            <button class="setting-link danger" id="block-user-btn" type="button">Block user</button>
-          </div>
-          <div class="settings-card" id="group-members-card" hidden>
-            <div class="setting-row"><div><span>Members</span><strong id="group-member-count">0</strong></div></div>
-            <div class="member-picker" id="group-add-member-picker"></div>
-            <div class="member-list" id="group-member-list"></div>
-            <button class="setting-link danger" id="leave-group-btn" type="button">Exit group</button>
-            <button class="setting-link danger" id="delete-group-btn" type="button">Delete group</button>
-          </div>
-          <div class="settings-card" id="media-gallery-card" hidden>
-            <div class="setting-row"><div><span>Media gallery</span><strong id="media-count">0 photos</strong></div></div>
-            <div class="media-gallery" id="media-gallery"></div>
-          </div>
-        </section>
-      </main>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zopnex - Online Shopping Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#172033;--muted:#677085;--line:#e5e9f2;--soft:#f6f8fb;--brand:#0f766e;--brand2:#f59e0b;--danger:#dc2626;--ok:#16a34a;--card:#fff;--shadow:0 18px 50px rgba(17,24,39,.09)}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--ink);background:#fff}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}img{max-width:100%;display:block}.wrap{max-width:1180px;margin:auto;padding:0 18px}.top{background:#0b1220;color:#fff;font-size:13px}.top .wrap{display:flex;justify-content:space-between;gap:12px;padding:9px 18px}.header{position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);z-index:20;border-bottom:1px solid var(--line)}.head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:14px 18px}.brand{display:flex;align-items:center;gap:10px;min-width:0}.logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--brand),#13a79a);color:#fff;display:grid;place-items:center;font-weight:900;box-shadow:0 12px 28px rgba(15,118,110,.24);flex:0 0 auto}.logo.logo-image{width:clamp(150px,19vw,260px);height:64px;border-radius:0;background:transparent;box-shadow:none;padding:0}.logo.logo-image img{width:100%;height:100%;object-fit:contain;border-radius:0}.brand.has-logo-image .brand-copy{display:none}.brand h1{font-size:22px;line-height:1;margin:0}.brand span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.search{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:999px;overflow:hidden}.search input{width:100%;border:0;background:transparent;padding:13px 16px;outline:0}.search button,.btn{background:var(--brand);color:#fff;border-radius:999px;padding:12px 18px;font-weight:700}.head-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.icon-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:11px 14px;font-weight:800;color:var(--ink)}.account-btn{display:flex;align-items:center;gap:8px;max-width:180px}.avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;background:var(--soft)}.cart-count{background:var(--brand2);color:#111;border-radius:99px;padding:2px 7px;margin-left:5px;font-size:12px}.hero{background:linear-gradient(135deg,#ecfdf5,#fff7ed);border-bottom:1px solid var(--line)}.hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:20px;padding:28px 18px}.banner{min-height:310px;border-radius:22px;overflow:hidden;position:relative;background:#dff7ef;box-shadow:var(--shadow)}.banner img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}.banner:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.56),rgba(0,0,0,.05))}.banner-copy{position:absolute;z-index:2;color:#fff;max-width:520px;padding:38px}.banner-copy h2{font-size:42px;margin:0 0 10px;letter-spacing:0}.banner-copy p{font-size:16px;line-height:1.6}.banner-fade{animation:bannerFade .45s ease}.banner-dots{position:absolute;z-index:3;left:38px;bottom:24px;display:flex;gap:8px}.banner-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.56);padding:0}.banner-dot.active{width:24px;border-radius:999px;background:#fff}.deal{background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center}.deal b{color:var(--brand)}.section{padding:34px 0}.section-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:18px}.section-title h2{font-size:26px;margin:0}.section-title p{color:var(--muted);margin:6px 0 0}.chips{display:flex;gap:10px;overflow:auto;padding-bottom:4px}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 15px;white-space:nowrap;font-weight:700}.chip.active{background:var(--ink);color:#fff}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin:18px 0}.field{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;outline:0;width:100%}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card);box-shadow:0 8px 24px rgba(17,24,39,.05);transition:.2s}.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}.pic{aspect-ratio:1/1;background:var(--soft);position:relative}.pic img{width:100%;height:100%;object-fit:cover}.badge{position:absolute;top:10px;left:10px;background:#fef3c7;color:#92400e;border-radius:999px;padding:5px 9px;font-weight:800;font-size:12px}.card-body{padding:14px}.cat{color:var(--brand);font-weight:800;font-size:12px;text-transform:uppercase}.name{font-weight:800;margin:7px 0;min-height:42px}.price{display:flex;align-items:center;gap:8px;font-weight:900;font-size:20px}.old{text-decoration:line-through;color:#9aa3b5;font-size:14px;font-weight:600}.stock{font-size:12px;font-weight:800;margin:8px 0}.in{color:var(--ok)}.out{color:var(--danger)}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.btn.alt{background:#111827}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.empty,.loading,.error{border:1px dashed var(--line);border-radius:18px;padding:36px;text-align:center;color:var(--muted);background:var(--soft)}.skeleton{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.sk{height:310px;border-radius:16px;background:linear-gradient(90deg,#eef2f7,#f8fafc,#eef2f7);background-size:200% 100%;animation:shine 1.3s infinite}@keyframes shine{to{background-position:-200% 0}}@keyframes bannerFade{from{opacity:.55;transform:scale(1.01)}to{opacity:1;transform:scale(1)}}.drawer,.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;display:none}.drawer.open,.modal.open{display:block}.drawer-panel{margin-left:auto;width:min(460px,100%);height:100%;background:#fff;padding:18px;overflow:auto;box-shadow:var(--shadow)}.modal-card{width:min(920px,94vw);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;margin:5vh auto;padding:20px;box-shadow:var(--shadow)}.modal-head,.drawer-head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px}.x{background:var(--soft);border-radius:999px;width:38px;height:38px;font-weight:900}.cart-item,.order-card{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}.order-card{grid-template-columns:1fr auto}.cart-item img{width:72px;height:72px;object-fit:cover;border-radius:12px;background:var(--soft)}.cart-remove{grid-column:2/-1;justify-self:start;padding:8px 13px;border-radius:999px}.qty{display:flex;align-items:center;gap:8px;margin-top:8px}.qty button{width:30px;height:30px;border-radius:8px;background:var(--soft);font-weight:900}.summary{background:var(--soft);border-radius:16px;padding:14px;margin-top:16px}.sumrow{display:flex;justify-content:space-between;margin:8px 0}.sumrow.total{font-size:20px;font-weight:900;border-top:1px solid var(--line);padding-top:10px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgrid .full{grid-column:1/-1}label{display:block;font-size:13px;font-weight:800;margin:0 0 6px}textarea.field{min-height:90px;resize:vertical}.detail{display:grid;grid-template-columns:1fr 1fr;gap:20px}.detail-img{border-radius:18px;overflow:hidden;background:var(--soft)}.detail-img img{width:100%;height:100%;min-height:360px;object-fit:cover}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#111827;color:#fff;padding:12px 16px;border-radius:999px;z-index:80;transition:.2s;font-weight:700}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}.step{padding:10px;border-radius:12px;background:var(--soft);text-align:center;font-size:12px;font-weight:800;color:var(--muted)}.step.done{background:#dcfce7;color:#166534}.mobile-bar{display:none;position:fixed;left:12px;right:12px;bottom:12px;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;z-index:30;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+    .profile-menu{position:fixed;right:18px;top:86px;width:min(360px,calc(100vw - 28px));background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 16px 45px rgba(15,23,42,.18);z-index:45;display:none;overflow:hidden}.profile-menu.open{display:block}.profile-head{display:grid;grid-template-columns:46px 1fr;gap:12px;padding:18px}.profile-avatar,.avatar-fallback{border-radius:50%;background:linear-gradient(135deg,#0f766e,#f59e0b);color:#fff;display:grid;place-items:center;font-weight:900;overflow:hidden;text-transform:uppercase}.profile-avatar{width:46px;height:46px}.profile-avatar img,.avatar-fallback img{width:100%;height:100%;object-fit:cover}.avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--soft)}.account-btn.profile-only{width:48px;height:48px;max-width:48px;padding:0;border-radius:50%;justify-content:center;overflow:hidden}.account-btn.profile-only .avatar-fallback{width:38px;height:38px;font-size:14px}.profile-name{font-weight:800}.profile-email{font-size:13px;color:#3f4654;margin-top:3px;word-break:break-all}.manage-pill{grid-column:2;border:1px solid var(--line);border-radius:999px;background:#fff;color:#2f3848;padding:9px 14px;margin-top:8px;font-weight:600}.profile-row{width:100%;display:grid;grid-template-columns:38px 1fr;gap:8px;align-items:center;text-align:left;background:#fff;color:#2d3442;padding:14px 22px;font-weight:500}.profile-row:hover,.profile-row.active{background:#f3f4f6}.profile-icon{font-size:20px;color:#606873}.profile-sep{height:1px;background:var(--line);margin:6px 0}.login-panel{padding:18px}.login-panel h3{margin:0 0 8px}.login-panel p{color:var(--muted);line-height:1.5}
+    .wish-btn{position:absolute;top:8px;right:8px;width:34px;height:34px;background:transparent;color:#111;border:0;box-shadow:none;font-size:25px;line-height:1;z-index:2;padding:0;text-shadow:0 1px 2px rgba(255,255,255,.85)}.wish-btn.active{color:#e11d48;text-shadow:none}.wish-btn:hover{transform:scale(1.08)}.wish-item{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.wish-item img{width:72px;height:72px;border-radius:12px;object-fit:cover;background:var(--soft)}
+    .support-btn{margin:8px 16px 16px;width:calc(100% - 32px);background:#111827;color:#fff;border-radius:999px;padding:13px 16px;font-weight:800}.chat-box{border:1px solid var(--line);border-radius:16px;padding:12px;background:var(--soft);max-height:320px;overflow:auto}.chat-msg{padding:10px 12px;border-radius:14px;margin:8px 0;max-width:86%;background:#fff}.chat-msg.admin{margin-left:auto;background:#dcfce7}.trust-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.trust-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:800}.trust-item small{display:block;color:var(--muted);font-weight:600;margin-top:4px}.coupon-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}.upi-box{display:grid;grid-template-columns:180px 1fr;gap:16px;align-items:start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}.upi-box img{width:180px;height:180px;border:1px solid var(--line);border-radius:12px;background:#fff;object-fit:contain}.notify-list{display:grid;gap:10px}.notify-card{border:1px solid var(--line);background:#fff;border-radius:14px;padding:14px}.review-form{display:grid;gap:10px;margin-top:12px}.review-photo{width:120px;height:120px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:var(--soft)}
+    .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.trust-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:13px;font-weight:900}.trust-card small{display:block;color:var(--muted);font-weight:600;line-height:1.45;margin-top:4px}.return-status-card{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px;margin-top:12px}.return-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}.return-step{font-size:12px;text-align:center;border-radius:999px;background:#f1f5f9;color:var(--muted);padding:8px;font-weight:800}.return-step.done{background:#dcfce7;color:#166534}
+    .checkout-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.checkout-step{padding:10px;border-radius:999px;background:var(--soft);text-align:center;font-size:13px;font-weight:800;color:var(--muted)}.checkout-step.active{background:var(--brand);color:#fff}.payment-choice{display:grid;gap:10px}.pay-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.pay-card input{margin-right:8px}.mini-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0;color:var(--muted);font-size:12px}.rating-pill{background:#16803f;color:#fff;border-radius:6px;padding:3px 7px;font-weight:900}.delivery-note{font-size:12px;color:var(--muted);margin:8px 0}.section-block{margin-bottom:34px}.section-block .grid{display:grid}.variant-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.variant-chip{border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:#fff;font-weight:700;font-size:13px}.spec-list{background:var(--soft);border-radius:14px;padding:12px;margin-top:12px}.spec-list div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0}.spec-list div:last-child{border-bottom:0}.gallery{display:grid;grid-template-columns:1fr;gap:10px}.gallery-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;overscroll-behavior-x:contain;border-radius:18px;background:#fff}.gallery-track::-webkit-scrollbar{display:none}.gallery-slide{min-width:100%;aspect-ratio:1/1;scroll-snap-align:center;display:grid;place-items:center;background:#fff}.gallery-slide img{width:100%;height:100%;object-fit:contain}.gallery-dots{display:flex;justify-content:center;gap:7px}.gallery-dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;padding:0}.gallery-dot.active{width:20px;border-radius:999px;background:var(--brand)}.product-page,.search-page{position:fixed;inset:0;background:#f1f3f6;z-index:70;display:none;overflow:auto}.product-page.open,.search-page.open{display:block}.product-page-head,.search-page-head{position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid var(--line);padding:12px 18px;display:flex;align-items:center;gap:12px}.product-page-head h2,.search-page-head h2{margin:0;font-size:18px}.back-btn{width:40px;height:40px;border-radius:50%;background:var(--soft);font-size:22px;font-weight:900}.product-page-body,.search-page-body{max-width:1180px;margin:0 auto;padding:18px}.product-shell{background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px}.product-page .detail{align-items:start;grid-template-columns:minmax(300px,440px) 1fr}.product-page .gallery{max-width:440px}#checkoutModal{z-index:90}.checkout-screen,.order-screen{width:100vw;height:100vh;max-height:none;margin:0;border-radius:0;padding:0;box-shadow:none;display:flex;flex-direction:column}.checkout-screen .modal-head,.order-screen .modal-head{padding:16px 22px;background:#fff}.checkout-screen #checkoutBody,.order-screen #myOrdersBody{flex:1;overflow:auto;padding:18px;max-width:980px;width:100%;margin:0 auto}.address-view{display:grid;gap:12px}.mobile-cart-icon{font-size:22px;line-height:1}
+    .orders-shell{background:#f1f3f6;padding:12px;border-radius:12px}.order-row{display:grid;grid-template-columns:92px 1fr 120px 340px;gap:14px;align-items:start;background:#fff;border:1px solid #d8dde6;border-radius:5px;margin-bottom:10px;padding:16px;cursor:pointer}.order-row:hover{box-shadow:0 2px 8px rgba(15,23,42,.12)}.order-row img{width:74px;height:74px;object-fit:cover;background:var(--soft)}.order-title{font-weight:600;line-height:1.35}.order-meta{color:var(--muted);font-size:12px;margin-top:12px}.status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;background:var(--ok)}.status-dot.bad{background:#ff5a5f}.review-link{color:#1455d9;font-weight:700;margin-top:12px}.order-detail-shell{background:#f1f3f6;padding:12px;border-radius:12px}.detail-layout{display:grid;grid-template-columns:1.4fr .7fr;gap:18px}.detail-panel{background:#fff;padding:18px;border-radius:2px}.detail-product{display:grid;grid-template-columns:1fr 90px;gap:14px}.detail-product img{width:72px;height:72px;object-fit:cover;background:var(--soft)}.vertical-timeline{padding:18px 0}.v-step{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start;margin:0 0 18px}.v-dot{width:16px;height:16px;border-radius:50%;background:var(--ok);margin-top:2px;position:relative}.v-dot:after{content:"";position:absolute;left:7px;top:16px;width:2px;height:34px;background:var(--ok)}.v-step:last-child .v-dot:after{display:none}.rate-box{background:#fff;margin-top:10px;padding:18px}.stars{font-size:28px;color:#64748b;letter-spacing:6px}.rate-star{background:transparent;color:#64748b;font-size:30px;padding:0 2px}.rate-star.active,.rate-star:hover{color:#f59e0b}.address-chip,.paid-chip{background:#fafafa;border-radius:16px;padding:14px;margin-top:12px}.download-invoice{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;font-weight:800;margin-top:16px}.support-screen{width:100vw;height:100vh;max-height:none;margin:0;padding:0;border-radius:0;display:flex;flex-direction:column;overflow:hidden}.support-screen #supportBody{height:100%;min-height:0;display:flex;flex-direction:column}.support-head{height:72px;display:flex;align-items:center;gap:16px;padding:0 18px;border-bottom:1px solid var(--line);background:#fff;flex:0 0 auto}.support-logo{width:40px;height:40px;border-radius:50%;background:#ffde17;color:#1455d9;display:grid;place-items:center;font-weight:900;font-size:24px}.support-chat{flex:1 1 auto;min-height:0;overflow-y:auto;padding:28px 54px;background-color:#f7fbff;background-image:radial-gradient(circle at 1px 1px,#e4eefb 1px,transparent 0);background-size:16px 16px}.support-bot-card{width:min(320px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.12);margin:18px 0}.support-bot-card p{padding:14px;margin:0}.quick-option{display:block;width:100%;background:#fff;border-top:1px solid var(--line);padding:14px;color:#0b5cff;font-weight:600;text-align:left}.user-bubble{margin-left:auto;background:#1264f4;color:#fff;border-radius:12px 12px 2px 12px;padding:12px 14px;width:max-content;max-width:55%;font-weight:700}.bot-bubble{background:#fff;border-radius:12px 12px 12px 2px;padding:12px 14px;width:max-content;max-width:55%;box-shadow:0 1px 4px rgba(15,23,42,.1)}.support-input{height:62px;display:grid;grid-template-columns:1fr 58px;border-top:1px solid var(--line);background:#fff;flex:0 0 auto}.support-input input{border:0;padding:0 24px;font-size:16px;outline:0}.support-input button{background:#fff;color:#b6bbc5;font-size:34px}
+    .site-footer{background:#0b1220;color:#dbe4f0;margin-top:24px;padding:30px 0}.footer-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:20px}.footer-grid h3,.footer-grid h4{color:#fff;margin:0 0 10px}.footer-grid p{color:#aab4c8;line-height:1.6;margin:0}.footer-links{display:grid;gap:8px}.footer-links button{background:transparent;color:#dbe4f0;text-align:left;padding:0;font-weight:700}.footer-links button:hover{color:#fff}.info-content{white-space:pre-wrap;line-height:1.75;color:var(--ink)}.info-content.empty{color:var(--muted)}
+    .search-surface{display:grid;gap:14px}.search-box-full{position:sticky;top:0;z-index:3;background:#f1f3f6;padding:0 0 10px;display:grid;grid-template-columns:1fr auto;gap:8px}.search-box-full input{width:100%;border:1px solid var(--line);border-radius:16px;background:#fff;padding:15px 16px;font-size:16px;outline:0}.suggest-list{display:grid;gap:8px}.suggest-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:left;color:var(--ink)}.suggest-item img,.suggest-icon{width:44px;height:44px;border-radius:10px;background:var(--soft);object-fit:cover;display:grid;place-items:center;font-weight:900}.suggest-item b{display:block}.suggest-item small{color:var(--muted)}.filter-panel{display:flex;flex-direction:column}.filter-options{display:grid;gap:12px;padding-top:16px}.filter-actions{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:18px}.filter-open{display:none}.modal-card{width:100vw;height:100vh;max-height:none;margin:0;border-radius:0;display:flex;flex-direction:column}.modal-card>.modal-head{flex:0 0 auto}.modal-card>div:last-child{flex:1;overflow:auto}#variantModal{z-index:120}.variant-card{width:min(440px,94vw);height:auto;max-height:90vh;margin:8vh auto;border-radius:18px;display:block}.variant-body{display:grid;gap:12px}.drawer-panel{width:100%;max-width:none}
+    .checkout-steps{position:sticky;top:0;z-index:4;background:#fff;padding:12px 0;border-bottom:1px solid var(--line)}.checkout-step{display:flex;align-items:center;justify-content:center;gap:8px}.checkout-step span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#fff;color:inherit;border:1px solid currentColor;font-size:12px}.checkout-step.done{background:#dcfce7;color:#166534}.status-dot.placed,.status-dot.accepted{background:#2563eb}.status-dot.pending,.status-dot.packed{background:#f59e0b}.status-dot.shipped,.status-dot.out-for-delivery{background:#7c3aed}.status-dot.delivered{background:#16a34a}.status-dot.cancelled,.status-dot.returned,.status-dot.rto{background:#dc2626}.loading-shell{border:0;background:transparent;padding:0;text-align:left}
+    .order-detail-shell{background:transparent;padding:0;border-radius:0}.order-detail-top{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}.order-detail-top h3{margin:0;font-size:18px}.order-id-pill{display:inline-flex;margin-top:6px;border-radius:999px;background:var(--soft);padding:6px 10px;color:var(--muted);font-size:12px;font-weight:800}.order-hero-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.order-product-clean{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:start}.order-product-clean img{width:96px;height:96px;border-radius:12px;object-fit:cover;background:var(--soft)}.status-card{display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}.order-side-stack{display:grid;gap:12px}.order-side-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}.order-side-card h3,.order-hero-card h3{margin:0 0 12px}.order-actions-clean{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.download-invoice.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .top{display:none}.order-breadcrumb{font-size:12px;color:var(--muted);margin:0 0 10px}.order-breadcrumb .btn{padding:7px 12px;margin-right:8px}
+    #cartDrawer,#filterDrawer{z-index:95}#trackModal,#accountModal,#myOrdersModal,#wishlistModal,#infoModal,#supportModal{z-index:100}.mobile-bar{z-index:85}
+    @media(max-width:900px){.head{grid-template-columns:1fr auto}.search{grid-column:1/-1}.hero-grid,.detail,.detail-layout,.footer-grid{grid-template-columns:1fr}.grid,.skeleton{grid-template-columns:repeat(2,1fr)}.toolbar{display:flex;gap:8px;overflow:auto;white-space:nowrap}.toolbar .field,.toolbar .btn{min-width:max-content}.banner-copy h2{font-size:32px}.deal{min-height:180px}.mobile-bar{display:none;left:auto;right:16px;bottom:16px;width:54px;height:54px;border-radius:50%;padding:0;align-items:center;justify-content:center;background:transparent;box-shadow:none}.mobile-bar.has-items{display:flex}.mobile-bar b{display:none}.mobile-bar .btn{width:54px;height:54px;border-radius:50%;padding:0;background:transparent!important;color:#111;box-shadow:none}.mobile-bar .mobile-cart-icon{font-size:28px;color:#111}.formgrid{grid-template-columns:1fr}.profile-menu{top:132px}.order-row{grid-template-columns:72px 1fr}.order-row>strong,.order-row>.order-status{grid-column:2}.support-chat{padding:18px}.user-bubble,.bot-bubble{max-width:86%}.product-page .detail{grid-template-columns:1fr}.product-page .gallery{max-width:520px;margin:auto}.product-page .detail-img{position:static;max-height:360px}.trust-grid{grid-template-columns:repeat(2,1fr)}.return-flow{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.top .wrap{display:block}.header{position:sticky;top:0}.head{grid-template-columns:minmax(104px,1fr) 38px auto;gap:8px;padding:10px 12px;transition:.18s}.header.compact .head{padding:4px 12px}.brand{min-width:0}.logo.logo-image{width:116px;height:48px;transition:.18s}.header.compact .logo.logo-image{width:96px;height:38px}.head>.search{grid-column:auto;width:38px;height:46px;justify-self:end;border:0;background:transparent;overflow:visible}.header.compact .head>.search{height:38px}.head>.search input{display:none}.head>.search button{position:relative;width:38px;height:46px;padding:0;font-size:0;background:transparent;color:var(--ink);border-radius:0}.header.compact .head>.search button{height:38px}.head>.search button:before{content:"";position:absolute;left:8px;top:12px;width:14px;height:14px;border:3px solid #111;border-radius:50%}.header.compact .head>.search button:before{top:8px}.head>.search button:after{content:"";position:absolute;left:22px;top:27px;width:11px;height:3px;background:#111;border-radius:99px;transform:rotate(45deg);transform-origin:left center}.header.compact .head>.search button:after{top:23px}.head-actions{flex-wrap:nowrap;gap:6px}.head-actions .track-text{display:none}.icon-btn{width:46px;height:46px;padding:0;display:grid;place-items:center}.header.compact .icon-btn{width:38px;height:38px}.account-btn{max-width:46px;overflow:hidden}.account-btn:not(.profile-only){font-size:0}.account-btn:not(.profile-only):before{content:"";width:18px;height:18px;border:3px solid var(--brand);border-radius:50%;box-shadow:0 16px 0 -4px var(--brand)}.header.compact .account-btn.profile-only .avatar-fallback{width:32px;height:32px;font-size:12px}#cartBtn{display:none}.profile-menu{top:64px}.header.compact+.profile-menu{top:48px}.deal{display:none}.grid,.skeleton{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.banner{min-height:280px;border-radius:16px}.banner-copy{padding:24px}.banner-copy h2{font-size:28px}.section-title{display:block}.toolbar{display:grid;grid-template-columns:1fr auto;overflow:visible}.toolbar select,.toolbar #resetBtn{display:none}.filter-open{display:block}.card{border-radius:12px}.card-body{padding:10px}.name{font-size:13px;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{font-size:15px}.old,.delivery-note,.stock,.mini-meta{font-size:11px}.product-page .detail .search{width:100%;height:auto;border:1px solid var(--line);background:var(--soft);overflow:hidden}.product-page .detail .search input{display:block;min-width:0}.product-page .detail .search button{position:static;width:auto;height:auto;padding:12px 14px;font-size:13px;background:var(--brand);color:#fff;border-radius:999px}.product-page .detail .search button:before,.product-page .detail .search button:after{display:none}.actions{grid-template-columns:1fr}.product-page .detail .actions{position:sticky;bottom:0;grid-template-columns:1fr 1fr;background:#fff;padding:10px 0;margin:18px -2px 0;z-index:5;box-shadow:0 -10px 24px rgba(15,23,42,.08)}.product-page .detail .actions .btn{padding:13px 10px}.product-page-body{padding-bottom:86px}.cart-item{grid-template-columns:58px 1fr}.cart-item>strong{grid-column:2}.modal-card{width:100vw;height:100vh;margin:0;border-radius:0}.timeline{grid-template-columns:1fr}.order-detail-top,.order-product-clean,.order-actions-clean{grid-template-columns:1fr}.order-detail-top .btn{width:100%}.order-product-clean img{width:84px;height:84px}.upi-box{grid-template-columns:1fr}.upi-box img{width:100%;height:auto;max-width:240px;margin:auto}.trust-grid{grid-template-columns:1fr}.return-flow{grid-template-columns:1fr}.support-head{height:auto;min-height:64px;padding:10px 12px}.support-head .btn{padding:9px 10px;font-size:12px}.support-chat{padding:14px 12px}.support-input{height:58px}.suggest-item{grid-template-columns:38px 1fr auto;padding:9px}.suggest-item img,.suggest-icon{width:38px;height:38px}.filter-actions{position:sticky;bottom:0;background:#fff}}
+  </style>
+</head>
+<body>
+  <div class="top"><div class="wrap"><span id="announcement">Shop Smart. Delivered Easy.</span><span>COD and manual UPI payment ready</span></div></div>
+  <header class="header">
+    <div class="wrap head">
+      <div class="brand" id="brandHeader"><div class="logo" id="storeLogo">Z</div><div class="brand-copy"><h1 id="storeName">Zopnex</h1><span>Shop Smart. Delivered Easy.</span></div></div>
+      <div class="search"><input id="searchInput" placeholder="Search products..." /><button id="searchBtn">Search</button></div>
+      <div class="head-actions"><button class="icon-btn account-btn" id="accountBtn">Login</button><button class="icon-btn" id="cartBtn">Cart <span class="cart-count" id="cartCount">0</span></button></div>
     </div>
+  </header>
+  <div class="profile-menu" id="profileMenu"></div>
 
-    <div class="photo-viewer" id="photo-viewer" hidden>
-      <header>
-        <button class="icon-btn" id="close-photo-viewer-btn" title="Close" type="button">×</button>
-      </header>
-      <div class="photo-viewer-list" id="viewer-photo-list"></div>
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="banner" id="bannerBox"><div class="banner-copy"><h2>Premium picks for everyday India</h2><p>Fresh deals, trusted products, and easy delivery from Zopnex.</p><button class="btn" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now</button></div></div>
+        <div class="deal"><b>Today's Store Highlight</b><h2>Fast ordering with COD and manual UPI checkout.</h2><p style="color:var(--muted);line-height:1.6">Manual local and courier delivery support with order tracking from the first version.</p></div>
+      </div>
+    </section>
+
+    <section class="section"><div class="wrap"><div class="section-title"><div><h2>Categories</h2><p>Browse popular departments</p></div></div><div class="chips" id="categoryChips"></div></div></section>
+
+    <section class="section" id="products">
+      <div class="wrap">
+        <div class="section-title"><div><h2>Featured Products</h2><p>Handpicked products from Zopnex</p></div></div>
+        <div class="toolbar"><button class="btn ghost filter-open" id="filterBtn">Filter</button><select class="field" id="categoryFilter"></select><select class="field" id="sortFilter"><option value="latest">Latest first</option><option value="low">Price low to high</option><option value="high">Price high to low</option><option value="rating">Best rating</option><option value="discount">Discount products</option><option value="featured">Featured</option><option value="stock">Available only</option></select><button class="btn ghost" id="resetBtn">Reset</button></div>
+        <div id="productState" class="loading">Loading products...</div>
+        <div class="grid" id="productGrid" style="display:none"></div>
+      </div>
+    </section>
+    <section class="section" id="smartSections"><div class="wrap" id="smartSectionsBody"></div></section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div><h3 id="footerStoreName">Zopnex</h3><p id="footerAbout">Shop Smart. Delivered Easy.</p></div>
+      <div><h4>Customer Help</h4><div class="footer-links"><button onclick="openInfoPage('shipping')">Shipping Policy</button><button onclick="openInfoPage('return')">Return Policy</button><button onclick="openSupport()">Contact Support</button></div></div>
+      <div><h4>Store</h4><div class="footer-links"><button onclick="openInfoPage('about')">About Us</button><button onclick="openInfoPage('privacy')">Privacy Policy</button><button onclick="openInfoPage('contact')">Contact Details</button></div></div>
     </div>
+  </footer>
 
-    <div class="action-sheet-backdrop" id="message-actions" hidden>
-      <section class="action-sheet">
-        <button id="action-reply-btn" type="button">Reply</button>
-        <button id="action-copy-btn" type="button">Copy</button>
-        <button id="action-edit-btn" type="button">Edit</button>
-        <button id="action-forward-btn" type="button">Forward</button>
-        <button id="action-delete-btn" class="danger" type="button">Delete</button>
-        <button id="action-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+  <div class="mobile-bar" id="mobileCartBar"><b id="mobileCartText">0 items</b><button class="btn" id="mobileCheckoutBtn" title="Cart"><span class="mobile-cart-icon">🛒</span></button></div>
 
-    <div class="action-sheet-backdrop" id="chat-menu-actions" hidden>
-      <section class="action-sheet">
-        <button id="chat-menu-pin-btn" type="button">Pin chat</button>
-        <button id="chat-menu-profile-btn" type="button">View profile</button>
-        <button id="chat-menu-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+  <aside class="drawer" id="cartDrawer"><div class="drawer-panel"><div class="drawer-head"><h2>Shopping Cart</h2><button class="x" data-close="cartDrawer">X</button></div><div id="cartItems"></div><div class="summary" id="cartSummary"></div><button class="btn" style="width:100%;margin-top:12px" id="checkoutCartBtn">Checkout Cart</button><button class="btn ghost" style="width:100%;margin-top:8px" id="clearCartBtn">Clear Cart</button></div></aside>
+  <aside class="drawer" id="filterDrawer"><div class="drawer-panel filter-panel"><div class="drawer-head"><h2>Filter Products</h2><button class="x" data-close="filterDrawer">X</button></div><div id="filterDrawerBody"></div></div></aside>
 
-    <div class="action-sheet-backdrop" id="attach-actions" hidden>
-      <section class="action-sheet">
-        <button id="attach-image-btn" type="button">Image</button>
-        <button id="attach-file-btn" type="button">File / PDF</button>
-        <button id="attach-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+  <section class="product-page" id="productPage">
+    <div class="product-page-head"><button class="back-btn" onclick="closeProductPage()">‹</button><h2>Product Details</h2></div>
+    <div class="product-page-body"><div class="product-shell" id="productDetail"></div></div>
+  </section>
+  <section class="search-page" id="searchPage">
+    <div class="search-page-head"><button class="back-btn" onclick="closeSearchPage()">‹</button><h2 id="searchPageTitle">Search</h2></div>
+    <div class="search-page-body" id="searchPageBody"></div>
+  </section>
+  <div class="modal" id="checkoutModal"><div class="modal-card checkout-screen"><div class="modal-head"><h2 id="checkoutTitle">Checkout</h2><button class="x" data-close="checkoutModal">X</button></div><div id="checkoutBody"></div></div></div>
+  <div class="modal" id="trackModal"><div class="modal-card"><div class="modal-head"><h2>Track Order</h2><button class="x" data-close="trackModal">X</button></div><div class="formgrid"><div class="full"><label>Order ID</label><input class="field" id="trackOrderId" placeholder="ZPX-YYYYMMDD-XXXX"></div><button class="btn full" id="doTrackBtn">Track Order</button></div><div id="trackResult" style="margin-top:18px"></div></div></div>
+  <div class="modal" id="accountModal"><div class="modal-card"><div class="modal-head"><h2>Saved Address</h2><button class="x" data-close="accountModal">X</button></div><div id="accountBody"></div></div></div>
+  <div class="modal" id="myOrdersModal"><div class="modal-card order-screen"><div class="modal-head"><h2>My Orders</h2><button class="x" data-close="myOrdersModal">X</button></div><div id="myOrdersBody"><div class="loading">Loading orders...</div></div></div></div>
+  <div class="modal" id="wishlistModal"><div class="modal-card"><div class="modal-head"><h2>Wishlist</h2><button class="x" data-close="wishlistModal">X</button></div><div id="wishlistBody"></div></div></div>
+  <div class="modal" id="infoModal"><div class="modal-card checkout-screen"><div class="modal-head"><h2 id="infoTitle">Information</h2><button class="x" data-close="infoModal">X</button></div><div id="infoBody" style="flex:1;overflow:auto;padding:18px;max-width:900px;width:100%;margin:0 auto"></div></div></div>
+  <div class="modal" id="variantModal"><div class="modal-card variant-card"><div class="modal-head"><h2 id="variantTitle">Choose Options</h2><button class="x" data-close="variantModal">X</button></div><div id="variantBody"></div></div></div>
+  <div class="modal" id="supportModal"><div class="modal-card support-screen"><div id="supportBody"></div></div></div>
+  <div class="toast" id="toast"></div>
 
-    <div class="action-sheet-backdrop" id="reaction-actions" hidden>
-      <section class="action-sheet reaction-sheet">
-        <div class="reaction-row">
-          <button data-reaction="👍" type="button">👍</button>
-          <button data-reaction="❤️" type="button">❤️</button>
-          <button data-reaction="😂" type="button">😂</button>
-          <button data-reaction="😮" type="button">😮</button>
-          <button data-reaction="🙏" type="button">🙏</button>
-        </div>
-        <button id="reaction-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    <div class="action-sheet-backdrop" id="forward-actions" hidden>
-      <section class="action-sheet forward-sheet">
-        <h3>Forward to</h3>
-        <div class="chat-list" id="forward-chat-list"></div>
-        <button id="forward-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+    const firebaseConfig = { apiKey:"AIzaSyCQp2a58mQ9GxlAJG0abWrrF61ZTM9eUsY", authDomain:"zopnex-ts.firebaseapp.com", projectId:"zopnex-ts", storageBucket:"zopnex-ts.firebasestorage.app", messagingSenderId:"791998673086", appId:"1:791998673086:web:75801673b73f0c1b4deeef", measurementId:"G-2PP8T8VR6X" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const CLOUDINARY_API = "https://api.cloudinary.com/v1_1/dsnuatuc8/image/upload";
+    const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+    const INR = new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
+    const state = { user:null, customer:JSON.parse(localStorage.getItem("zopnex_customer")||"{}"), products:[], categories:[], banners:[], bannerIndex:0, coupons:[], myOrders:[], returnRequests:[], settings:{deliveryCharge:60,freeDeliveryAbove:999,codEnabled:true,announcement:"Shop Smart. Delivered Easy.",storeName:"Zopnex"}, cart:JSON.parse(localStorage.getItem("zopnex_cart")||"[]"), wishlist:JSON.parse(localStorage.getItem("zopnex_wishlist")||"[]"), checkout:null, supportTicket:null, supportUnsub:null, filter:{search:"",category:"all",sort:"latest"} };
+    let bannerTimer = null;
+    const $ = (id)=>document.getElementById(id);
 
-    <div class="action-sheet-backdrop" id="delete-actions" hidden>
-      <section class="action-sheet">
-        <button id="delete-for-me-btn" type="button">Delete for me</button>
-        <button id="delete-for-everyone-btn" class="danger" type="button">Delete for everyone</button>
-        <button id="delete-cancel-btn" type="button">Cancel</button>
-      </section>
-    </div>
+    function toast(msg){ $("toast").textContent=msg; $("toast").classList.add("show"); setTimeout(()=>$("toast").classList.remove("show"),2200); }
+    function money(n){ return INR.format(Number(n||0)); }
+    async function uploadCloudinary(file){ if(!file) return ""; const fd=new FormData(); fd.append("file",file); fd.append("upload_preset",CLOUDINARY_UPLOAD_PRESET); const res=await fetch(CLOUDINARY_API,{method:"POST",body:fd}); if(!res.ok) throw new Error("Cloudinary upload failed"); const json=await res.json(); return json.secure_url; }
+    function imagesOf(p){ const list=[...(Array.isArray(p.images)?p.images:[]),p.mainImage,p.image].filter(Boolean); return list.length ? [...new Set(list)] : ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=900&auto=format&fit=crop"]; }
+    function imageOf(p){ return imagesOf(p)[0]; }
+    function effectivePrice(p){ return Number(p.sellingPrice || p.discountPrice || p.price || 0); }
+    function originalPrice(p){ return Number(p.originalPrice || p.oldPrice || p.price || effectivePrice(p)); }
+    function discount(p){ const old=originalPrice(p), now=effectivePrice(p); return Number(p.discountPercent || (old>now ? Math.round(((old-now)/old)*100) : 0)); }
+    function ratingOf(p){ return Number(p.rating || 4.2).toFixed(1); }
+    function reviewCountOf(p){ return Number(p.reviewCount || 0); }
+    function deliveryInfo(p){ return p.deliveryInfo || (effectivePrice(p) >= Number(state.settings.freeDeliveryAbove||999) ? "Free delivery" : "Fast delivery available"); }
+    function specsOf(p){ if(p.specifications && typeof p.specifications === "object") return Object.entries(p.specifications); return String(p.specifications||"").split(/\n|,/).map(x=>x.trim()).filter(Boolean).map((x,i)=>[`Spec ${i+1}`,x]); }
+    function optionList(value){ return Array.isArray(value) ? value.filter(Boolean) : String(value||"").split(/,|\n/).map(x=>x.trim()).filter(Boolean); }
+    function productVariantGroups(p){ const v=p.variants||{}; return ["size","color","weight","pack"].map(k=>({key:k,label:k[0].toUpperCase()+k.slice(1),values:optionList(v[k]||p[k])})).filter(x=>x.values.length); }
+    function variantsOf(p){ return productVariantGroups(p).map(g=>`${g.label}: ${g.values.join(", ")}`); }
+    function variantTextFromItem(i){ return i.variantText || Object.entries(i.variant||{}).map(([k,v])=>`${k}: ${v}`).join(", "); }
+    window.slideProductImage=function(index){ const track=$("productGalleryTrack"); if(!track) return; const slide=track.children[index]; if(slide) slide.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"}); document.querySelectorAll(".gallery-dot").forEach((d,i)=>d.classList.toggle("active",i===index)); };
+    window.syncGalleryDots=function(){ const track=$("productGalleryTrack"); if(!track) return; const index=Math.round(track.scrollLeft/Math.max(1,track.clientWidth)); document.querySelectorAll(".gallery-dot").forEach((d,i)=>d.classList.toggle("active",i===index)); };
+    function cartKey(id,variant={}){ const raw=Object.keys(variant).sort().map(k=>`${k}:${variant[k]}`).join("|"); return raw ? `${id}__${raw}` : id; }
+    function stockQty(p){ return Number(p.stockQty ?? 1); }
+    function estimateDays(p){ return Number(p.deliveryDays || state.settings.deliveryDays || 4); }
+    function estimateDeliveryText(p,pin=""){ const days=estimateDays(p), d=new Date(); d.setDate(d.getDate()+days); const label=d.toLocaleDateString("en-IN",{day:"2-digit",month:"short"}); return /^\d{6}$/.test(String(pin)) ? `Delivery available by ${label}` : `Estimated delivery ${days}-${days+2} days`; }
+    function saveRecentlyViewed(id){ const list=JSON.parse(localStorage.getItem("zopnex_recently_viewed")||"[]").filter(x=>x!==id); list.unshift(id); localStorage.setItem("zopnex_recently_viewed",JSON.stringify(list.slice(0,12))); renderHomeSections(); }
+    function saveCart(){ localStorage.setItem("zopnex_cart",JSON.stringify(state.cart)); renderCartCount(); }
+    function renderCartCount(){ const c=state.cart.reduce((s,i)=>s+i.qty,0); $("cartCount").textContent=c; $("mobileCartText").textContent=`${c} item${c===1?"":"s"} in cart`; $("mobileCartBar").classList.toggle("has-items",c>0); }
+    function saveWishlist(){ localStorage.setItem("zopnex_wishlist",JSON.stringify(state.wishlist)); }
+    function inWishlist(id){ return state.wishlist.includes(id); }
+    window.toggleWishlist = function(id,event){ if(event) event.stopPropagation(); if(inWishlist(id)){ state.wishlist=state.wishlist.filter(x=>x!==id); toast("Removed from wishlist"); } else { state.wishlist.push(id); toast("Added to wishlist"); } saveWishlist(); renderProducts(); };
+    function isInStock(p){ return p.stockStatus !== "Out of Stock" && p.stockStatus !== "out" && stockQty(p) > 0; }
+    function deliveryFor(subtotal){ const free=Number(state.settings.freeDeliveryAbove||0); return free && subtotal>=free ? 0 : Number(state.settings.deliveryCharge||0); }
+    function genOrderId(){ const d=new Date(), pad=n=>String(n).padStart(2,"0"); return `ZPX-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${Math.floor(1000+Math.random()*9000)}`; }
+    function dateText(ts){ try{ const d=ts?.toDate ? ts.toDate() : (ts ? new Date(ts) : null); return d ? d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : ""; }catch(e){ return ""; } }
+    function customerRef(){ return state.user ? doc(db,"customers",state.user.uid) : null; }
+    function addressFields(c=state.customer||{}){ return { customerName:c.customerName||c.name||state.user?.displayName||"", mobile:c.mobile||"", alternateMobile:c.alternateMobile||"", address:c.address||"", villageCity:c.villageCity||"", district:c.district||"", state:c.state||"", pincode:c.pincode||"" }; }
+    function saveCustomerLocal(data){ state.customer={...state.customer,...data}; localStorage.setItem("zopnex_customer",JSON.stringify(state.customer)); }
+    async function saveCustomerProfile(data){
+      saveCustomerLocal(data);
+      if(!state.user) return;
+      await setDoc(customerRef(),{uid:state.user.uid,email:state.user.email,photoURL:state.user.photoURL||"",displayName:state.user.displayName||"",...state.customer,...data,updatedAt:serverTimestamp()},{merge:true}).catch(err=>console.warn("Customer profile save skipped",err));
+    }
+    async function loadCustomerProfile(){
+      if(!state.user) return;
+      const snap = await getDoc(customerRef()).catch(()=>null);
+      if(snap?.exists()) saveCustomerLocal(snap.data());
+      else await saveCustomerProfile({name:state.user.displayName||"",customerName:state.user.displayName||"",email:state.user.email||""});
+    }
+    function requireLogin(message="Please login with Google first."){
+      if(state.user) return true;
+      toast(message);
+      openAccount();
+      return false;
+    }
+    function renderAccountButton(){
+      if(state.user){
+        const name=state.customer.customerName||state.customer.name||state.user.displayName||state.user.email||"Customer";
+        $("accountBtn").classList.add("profile-only");
+        $("accountBtn").title="Profile";
+        $("accountBtn").innerHTML=avatarHtml(name);
+      }else{
+        $("accountBtn").classList.remove("profile-only");
+        $("accountBtn").title="Login";
+        $("accountBtn").textContent="Login";
+      }
+    }
+    function initials(name="Z"){ return String(name||"Z").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase() || "Z"; }
+    function profilePhoto(){ return state.customer.profileImage || state.customer.photoURL || state.user?.photoURL || ""; }
+    function avatarHtml(name="", cls="avatar-fallback"){
+      const src=profilePhoto();
+      return `<span class="${cls}">${src?`<img src="${src}" alt="">`:initials(name||state.user?.displayName||state.user?.email||"Customer")}</span>`;
+    }
+    function renderProfileMenu(){
+      if(!state.user){
+        $("profileMenu").innerHTML=`<div class="login-panel"><h3>Login with Google</h3><p>Login ke baad profile ke andar My Orders, saved address aur account options milenge.</p><button class="btn" style="width:100%" onclick="googleLogin()">Continue with Google</button></div>`;
+        return;
+      }
+      const name=state.customer.customerName||state.customer.name||state.user.displayName||"Zopnex Customer", email=state.user.email||"";
+      $("profileMenu").innerHTML=`<div class="profile-head"><div class="profile-avatar">${profilePhoto()?`<img src="${profilePhoto()}" alt="">`:initials(name)}</div><div><div class="profile-name">${name}</div><div class="profile-email">${email}</div></div><button class="manage-pill" onclick="openAddressModal()">Manage your Zopnex profile</button></div><div class="profile-sep"></div><button class="profile-row" onclick="openMyOrders()"><span class="profile-icon">OD</span><span>My Orders</span></button><button class="profile-row" onclick="openNotifications()"><span class="profile-icon">NT</span><span>Notifications</span></button><button class="profile-row" onclick="openWishlist()"><span class="profile-icon">WL</span><span>Wishlist</span></button><button class="profile-row" onclick="openAddressModal()"><span class="profile-icon">AD</span><span>Saved Address</span></button><button class="profile-row" onclick="openTrack()"><span class="profile-icon">TR</span><span>Track Order</span></button><button class="profile-row" onclick="document.getElementById('cartBtn').click()"><span class="profile-icon">CT</span><span>Cart</span></button><div class="profile-sep"></div><button class="profile-row active" onclick="openAddressModal()"><span class="profile-icon">ST</span><span>Settings</span></button><div class="profile-sep"></div><button class="profile-row" onclick="logoutCustomer()"><span class="profile-icon">SO</span><span>Sign out</span></button><button class="support-btn" onclick="openSupport()">24x7 Customer Support</button>`;
+    }
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    async function loadAll(){
+      try{
+        $("productState").className="loading-shell";
+        $("productState").innerHTML=productSkeleton(8);
+        const [ps,cs,bs,cps,ss] = await Promise.all([
+          getDocs(query(collection(db,"products"),orderBy("createdAt","desc"))).catch(()=>getDocs(collection(db,"products"))),
+          getDocs(collection(db,"categories")),
+          getDocs(collection(db,"banners")),
+          getDocs(collection(db,"coupons")).catch(()=>({docs:[]})),
+          getDoc(doc(db,"settings","store"))
+        ]);
+        state.products = ps.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.active!==false && p.draft!==true);
+        state.categories = cs.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.active!==false);
+        state.banners = bs.docs.map(d=>({id:d.id,...d.data()})).filter(b=>b.active!==false).sort((a,b)=>Number(a.priority||99)-Number(b.priority||99));
+        state.coupons = cps.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.active!==false);
+        if(ss.exists()) state.settings = {...state.settings,...ss.data()};
+        applySettings(); renderCategories(); renderBanners(); startBannerAuto(); renderProducts(); renderHomeSections(); renderCartCount();
+      }catch(err){ console.error(err); $("productState").className="error"; $("productState").textContent="Products load nahi ho paaye. Firebase rules/config check karein."; }
+    }
+    onAuthStateChanged(auth, async user=>{
+      state.user=user;
+      renderAccountButton();
+      if(user){
+        await loadCustomerProfile();
+        renderAccountButton();
+      }else{
+        stopSupportLive();
+      }
+    });
 
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="./app.js"></script>
-  </body>
+    async function googleLogin(){
+      try{
+        await signInWithPopup(auth,new GoogleAuthProvider());
+        toast("Google login successful");
+        setTimeout(openAccount,500);
+      }catch(err){
+        console.error(err);
+        toast("Google login failed. Firebase Auth me Google provider/domain check karein.");
+      }
+    }
+    async function logoutCustomer(){
+      await signOut(auth);
+      state.customer={};
+      localStorage.removeItem("zopnex_customer");
+      renderAccountButton();
+      closeProfileMenu();
+      closeAccountModal();
+      toast("Logged out");
+    }
+    function closeAccountModal(){ $("accountModal").classList.remove("open"); }
+    function closeProfileMenu(){ $("profileMenu").classList.remove("open"); }
+    function openAccount(){
+      renderProfileMenu();
+      $("profileMenu").classList.toggle("open");
+    }
+    function openAddressModal(){
+      closeProfileMenu();
+      if(!state.user){
+        $("accountBody").innerHTML=`<div class="empty"><h2>Login with Google</h2><p>Login ke baad My Orders aur saved address auto available rahega.</p><button class="btn" onclick="googleLogin()">Continue with Google</button></div>`;
+      }else{
+        renderAccountAddress(false);
+      }
+      $("accountModal").classList.add("open");
+    }
+    function accountAddressText(c=addressFields()){
+      return [c.address,c.villageCity,c.district,c.state,c.pincode].filter(Boolean).join(", ");
+    }
+    function renderAccountAddress(edit=false){
+      const c=addressFields(), hasAddress=Object.values(c).some(Boolean);
+      const displayName=c.customerName||state.user.displayName||"Customer";
+      const profileCard=`<div class="summary" style="display:flex;gap:12px;align-items:center"><div class="profile-avatar">${profilePhoto()?`<img src="${profilePhoto()}" alt="">`:initials(displayName)}</div><div><b>${displayName}</b><p style="margin:4px 0;color:var(--muted);word-break:break-all">${state.user.email||""}</p></div></div>`;
+      if(!edit && hasAddress){
+        $("accountBody").innerHTML=`${profileCard}<div class="summary address-view"><b>Saved Address</b><p style="color:var(--muted);line-height:1.7">${c.customerName||""} ${c.mobile?`- ${c.mobile}`:""}<br>${accountAddressText(c)||"Address not added"}</p><button class="btn ghost" onclick="renderAccountAddress(true)">Edit Profile</button></div>`;
+        return;
+      }
+      $("accountBody").innerHTML=`${profileCard}<form id="profileForm" class="formgrid" style="margin-top:16px"><div class="full summary" style="display:flex;gap:12px;align-items:center;margin-top:0"><div class="profile-avatar">${profilePhoto()?`<img src="${profilePhoto()}" alt="">`:initials(displayName)}</div><div style="flex:1"><label>Profile Photo</label><input class="field" name="profileFile" type="file" accept="image/*"><small style="display:block;color:var(--muted);margin-top:6px">Photo upload karne ke baad home par yahi avatar dikhega.</small></div></div><div><label>Full Name</label><input required class="field" name="customerName" value="${edit?c.customerName:""}"></div><div><label>Mobile Number</label><input required class="field" name="mobile" value="${edit?c.mobile:""}"></div><div><label>Alternate Mobile</label><input class="field" name="alternateMobile" value="${edit?c.alternateMobile:""}"></div><div><label>Village / City</label><input required class="field" name="villageCity" value="${edit?c.villageCity:""}"></div><div><label>District</label><input required class="field" name="district" value="${edit?c.district:""}"></div><div><label>State</label><input required class="field" name="state" value="${edit?c.state:""}"></div><div><label>PIN Code</label><input required class="field" name="pincode" value="${edit?c.pincode:""}"></div><div class="full"><label>Full Address</label><textarea required class="field" name="address">${edit?c.address:""}</textarea></div><button class="btn full">Save Profile</button></form>`;
+      $("profileForm").onsubmit=async e=>{
+        e.preventDefault();
+        const form=e.target;
+        const data=Object.fromEntries(new FormData(form).entries());
+        delete data.profileFile;
+        const file=form.profileFile?.files?.[0];
+        if(file){
+          toast("Profile photo upload ho raha hai...");
+          data.profileImage=await uploadCloudinary(file);
+        }
+        await saveCustomerProfile(data);
+        toast("Profile saved");
+        renderAccountButton();
+        renderProfileMenu();
+        renderAccountAddress(false);
+      };
+    }
+    window.renderAccountAddress=renderAccountAddress;
+    window.googleLogin=googleLogin; window.logoutCustomer=logoutCustomer; window.openMyOrders=openMyOrders; window.openNotifications=openNotifications; window.openAddressModal=openAddressModal;
+    function applySettings(){ $("announcement").textContent=state.settings.announcement||"Shop Smart. Delivered Easy."; $("storeName").textContent=state.settings.storeName||"Zopnex"; $("footerStoreName").textContent=state.settings.storeName||"Zopnex"; $("footerAbout").textContent=state.settings.aboutStore || state.settings.announcement || "Shop Smart. Delivered Easy."; if(state.settings.logo){ $("brandHeader").classList.add("has-logo-image"); $("storeLogo").classList.add("logo-image"); $("storeLogo").innerHTML=`<img alt="logo" src="${state.settings.logo}">`; }else{ $("brandHeader").classList.remove("has-logo-image"); $("storeLogo").classList.remove("logo-image"); $("storeLogo").textContent="Z"; } }
+    function fallbackInfo(type){
+      const map={about:"Zopnex par aap trusted products, easy checkout, order tracking, aur customer support ke saath shopping kar sakte hain.",return:"Delivered product ke liye eligible return/replacement request My Orders se submit kar sakte hain. Product condition aur return window admin policy ke hisab se verify hoti hai.",shipping:"Orders local delivery ya courier delivery se bheje jaate hain. Tracking details order page par update hoti hain.",privacy:"Customer details sirf order, delivery, payment verification, aur support ke liye use kiye jaate hain.",contact:`Support ke liye Chat with us use karein.${state.settings.whatsapp?` WhatsApp: ${state.settings.whatsapp}`:""}${state.settings.contactEmail?` Email: ${state.settings.contactEmail}`:""}`};
+      return map[type]||"Information will be updated soon.";
+    }
+    window.openInfoPage=function(type){
+      const map={about:["About Us","aboutStore"],return:["Return Policy","returnPolicy"],shipping:["Shipping Policy","shippingPolicy"],privacy:["Privacy Policy","privacyPolicy"],contact:["Contact Details","storeAddress"]};
+      const [title,key]=map[type]||map.about;
+      let content=state.settings[key] || fallbackInfo(type);
+      if(type==="contact"){
+        content=[state.settings.storeAddress,state.settings.contactEmail&&`Email: ${state.settings.contactEmail}`,state.settings.whatsapp&&`WhatsApp: ${state.settings.whatsapp}`].filter(Boolean).join("\n") || fallbackInfo(type);
+      }
+      $("infoTitle").textContent=title;
+      $("infoBody").innerHTML=`<div class="summary"><div class="info-content ${content?"":"empty"}">${String(content||"Information will be updated soon.")}</div></div>`;
+      $("infoModal").classList.add("open");
+      document.body.style.overflow="hidden";
+    };
+    function bannerAction(b){ return b.buttonLink ? `location.href='${String(b.buttonLink).replace(/'/g,"\\'")}'` : "document.getElementById('products').scrollIntoView({behavior:'smooth'})"; }
+    function renderBanners(){
+      const list=state.banners;
+      if(!list.length) return;
+      if(state.bannerIndex>=list.length) state.bannerIndex=0;
+      const b=list[state.bannerIndex];
+      const img=window.matchMedia("(max-width:560px)").matches ? (b.mobileImage||b.mobileBanner||b.image) : (b.desktopImage||b.image);
+      $("bannerBox").innerHTML=`${img?`<img class="banner-fade" src="${img}" alt="">`:""}<div class="banner-copy banner-fade"><h2>${b.title||"Premium deals at Zopnex"}</h2><p>${b.subtitle||"Shop Smart. Delivered Easy."}</p><button class="btn" onclick="${bannerAction(b)}">${b.buttonText||"Shop Now"}</button></div>${list.length>1?`<div class="banner-dots">${list.map((_,i)=>`<button class="banner-dot ${i===state.bannerIndex?"active":""}" onclick="setBanner(${i},true)" aria-label="Banner ${i+1}"></button>`).join("")}</div>`:""}`;
+    }
+    function startBannerAuto(){
+      if(bannerTimer) clearInterval(bannerTimer);
+      if(state.banners.length<=1) return;
+      bannerTimer=setInterval(()=>{ state.bannerIndex=(state.bannerIndex+1)%state.banners.length; renderBanners(); },4500);
+    }
+    window.setBanner=(index,restart=false)=>{ state.bannerIndex=index; renderBanners(); if(restart) startBannerAuto(); };
+    function renderCategories(){
+      const cats=["all",...new Set(state.categories.map(c=>c.name).concat(state.products.map(p=>p.category).filter(Boolean)))];
+      $("categoryChips").innerHTML=cats.map(c=>`<button class="chip ${state.filter.category===c?"active":""}" data-cat="${c}">${c==="all"?"All":c}</button>`).join("");
+      $("categoryFilter").innerHTML=cats.map(c=>`<option value="${c}">${c==="all"?"All Categories":c}</option>`).join("");
+      $("categoryFilter").value=state.filter.category;
+      document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{state.filter.category=b.dataset.cat; $("categoryFilter").value=b.dataset.cat; renderCategories(); renderProducts();});
+    }
+    function filtered(){
+      let list=[...state.products];
+      if(state.filter.search) list=list.filter(p=>(p.name||"").toLowerCase().includes(state.filter.search)||String(p.brand||"").toLowerCase().includes(state.filter.search)||String(p.sku||"").toLowerCase().includes(state.filter.search));
+      if(state.filter.category!=="all") list=list.filter(p=>p.category===state.filter.category);
+      if(state.filter.sort==="low") list.sort((a,b)=>effectivePrice(a)-effectivePrice(b));
+      if(state.filter.sort==="high") list.sort((a,b)=>effectivePrice(b)-effectivePrice(a));
+      if(state.filter.sort==="rating") list.sort((a,b)=>Number(b.rating||0)-Number(a.rating||0));
+      if(state.filter.sort==="discount") list=list.filter(p=>discount(p)>0).sort((a,b)=>discount(b)-discount(a));
+      if(state.filter.sort==="featured") list=list.filter(p=>p.featured);
+      if(state.filter.sort==="stock") list=list.filter(isInStock);
+      return list;
+    }
+    function productCard(p){
+      return `<article class="card" onclick="showProduct('${p.id}')"><div class="pic"><img src="${imageOf(p)}" alt="${p.name||""}">${discount(p)?`<span class="badge">${discount(p)}% OFF</span>`:""}<button class="wish-btn ${inWishlist(p.id)?"active":""}" onclick="toggleWishlist('${p.id}',event)" title="Wishlist">${inWishlist(p.id)?"&#9829;":"&#9825;"}</button></div><div class="card-body"><div class="cat">${p.category||"General"}</div><div class="name">${p.name||"Product"}</div><div class="mini-meta"><span class="rating-pill">${ratingOf(p)} ★</span><span>${reviewCountOf(p)} reviews</span></div><div class="price">${money(effectivePrice(p))}${originalPrice(p)>effectivePrice(p)?`<span class="old">${money(originalPrice(p))}</span>`:""}</div><div class="delivery-note">${deliveryInfo(p)}</div><div class="stock ${isInStock(p)?"in":"out"}">${isInStock(p)?`In Stock${Number(p.stockQty||0)?` (${p.stockQty})`:""}`:"Out of Stock"}</div></div></article>`;
+    }
+    function renderProducts(){
+      const list=filtered(); $("productState").style.display=list.length?"none":"block"; $("productGrid").style.display=list.length?"grid":"none";
+      $("productState").className=list.length?"":"empty"; $("productState").textContent=state.products.length?"No products match your filters.":"No products added yet. Admin panel se products add karein.";
+      $("productGrid").innerHTML=list.map(productCard).join("");
+    }
+    function renderHomeSections(){
+      const recentIds=JSON.parse(localStorage.getItem("zopnex_recently_viewed")||"[]");
+      const recentProducts=recentIds.map(id=>state.products.find(p=>p.id===id)).filter(Boolean).slice(0,4);
+      const sections=[
+        ["Trending Products",state.products.filter(p=>p.trending||p.latest||Number(p.rating||0)>=4).slice(0,4)],
+        ["Best Sellers",state.products.filter(p=>p.bestSeller||p.featured||Number(p.soldCount||0)>0).slice(0,4)],
+        ["Recommended For You",recommendedProducts().slice(0,4)],
+        ["Deals of the Day",state.products.filter(p=>p.dealOfDay||p.deal||discount(p)>=15).slice(0,4)],
+        ["Recently Viewed",recentProducts]
+      ];
+      const byCategory=[...new Set(state.products.map(p=>p.category).filter(Boolean))].slice(0,3).map(cat=>[`${cat} Picks`,state.products.filter(p=>p.category===cat).slice(0,4)]);
+      $("smartSectionsBody").innerHTML=[...sections,...byCategory].filter(s=>s[1].length).map(([title,items])=>`<div class="section-block"><div class="section-title"><div><h2>${title}</h2><p>Fresh Zopnex selections for faster shopping</p></div></div><div class="grid">${items.map(productCard).join("")}</div></div>`).join("");
+    }
+    function recommendedProducts(){
+      const pool=[...state.products.filter(p=>p.featured||p.trending||p.bestSeller||isInStock(p)),...state.products];
+      return [...new Map(pool.map(p=>[p.id,p])).values()];
+    }
+    function productSkeleton(count=8){ return `<div class="skeleton">${Array.from({length:count},()=>`<div class="sk"></div>`).join("")}</div>`; }
+    function searchMatches(q){
+      const term=String(q||"").trim().toLowerCase();
+      if(!term) return [];
+      return state.products.filter(p=>{
+        const haystack=`${p.name||""} ${p.brand||""} ${p.sku||""}`.toLowerCase();
+        return haystack.includes(term);
+      });
+    }
+    function openSearchPage(){
+      const q=$("searchInput").value.trim();
+      $("searchPage").classList.add("open");
+      document.body.style.overflow="hidden";
+      renderSearchResults(q);
+      setTimeout(()=>$("searchPageInput")?.focus(),60);
+    }
+    function renderSearchResults(q=$("searchInput").value.trim()){
+      const results=sortProductList(searchMatches(q));
+      $("searchPageTitle").textContent=q?`Search: ${q}`:"Search Products";
+      $("searchPageBody").innerHTML=`<div class="search-surface"><div class="search-box-full" style="grid-template-columns:auto 1fr auto"><button class="btn ghost" onclick="openSearchSortDrawer()" title="Filter">☰</button><input id="searchPageInput" placeholder="Search product name" value="${q}"><button class="btn" onclick="runSearchPage()">Search</button></div><div class="section-block"><div class="section-title"><div><h2>${q?`${results.length} Products`:"Search Products"}</h2><p>${q?`Sorted: ${sortLabel(state.filter.sort)}`:"Product name type karein, phir Search click karein."}</p></div></div>${q&&results.length?`<div class="grid">${results.map(productCard).join("")}</div>`:q?`<div class="empty">No product found for "${q}".</div>`:`<div class="empty">Search button click karne ke baad result dikhega.</div>`}</div></div>`;
+      const input=$("searchPageInput");
+      if(input) input.oninput=()=>{ $("searchInput").value=input.value; };
+    }
+    window.renderSearchResults=renderSearchResults;
+    window.runSearchPage=function(){ const input=$("searchPageInput"), q=(input?.value||$("searchInput").value||"").trim(); $("searchInput").value=q; input?.blur(); renderSearchResults(q); };
+    window.closeSearchPage=function(){ $("searchPage").classList.remove("open"); document.body.style.overflow=""; };
+    window.applySearchCategory=function(category){ state.filter.category=category; $("categoryFilter").value=category; closeSearchPage(); renderCategories(); renderProducts(); document.getElementById("products").scrollIntoView({behavior:"smooth"}); };
+    function sortLabel(sort){ return ({latest:"Latest first",low:"Price low to high",high:"Price high to low",rating:"Best rating",discount:"Discount products",featured:"Featured",stock:"Available only"}[sort]||"Latest first"); }
+    function sortProductList(items){
+      let list=[...items];
+      if(state.filter.sort==="low") list.sort((a,b)=>effectivePrice(a)-effectivePrice(b));
+      if(state.filter.sort==="high") list.sort((a,b)=>effectivePrice(b)-effectivePrice(a));
+      if(state.filter.sort==="rating") list.sort((a,b)=>Number(b.rating||0)-Number(a.rating||0));
+      if(state.filter.sort==="discount") list=list.filter(p=>discount(p)>0).sort((a,b)=>discount(b)-discount(a));
+      if(state.filter.sort==="featured") list=list.filter(p=>p.featured);
+      if(state.filter.sort==="stock") list=list.filter(isInStock);
+      return list;
+    }
+    window.openSearchSortDrawer=function(){
+      $("filterDrawerBody").innerHTML=`<div class="filter-options"><label>Sort Search Results</label><select class="field" id="searchDrawerSort"><option value="latest" ${state.filter.sort==="latest"?"selected":""}>Latest first</option><option value="low" ${state.filter.sort==="low"?"selected":""}>Price low to high</option><option value="high" ${state.filter.sort==="high"?"selected":""}>Price high to low</option><option value="rating" ${state.filter.sort==="rating"?"selected":""}>Best rating</option><option value="discount" ${state.filter.sort==="discount"?"selected":""}>Discount products</option><option value="featured" ${state.filter.sort==="featured"?"selected":""}>Featured</option><option value="stock" ${state.filter.sort==="stock"?"selected":""}>Available only</option></select></div><div class="filter-actions"><button class="btn ghost" onclick="resetSearchSort()">Reset</button><button class="btn" onclick="applySearchSort()">Apply</button></div>`;
+      $("filterDrawer").classList.add("open"); document.body.style.overflow="hidden";
+    };
+    window.applySearchSort=function(){ state.filter.sort=$("searchDrawerSort").value; $("filterDrawer").classList.remove("open"); syncBodyLock(); renderSearchResults(($("searchPageInput")?.value||$("searchInput").value||"").trim()); };
+    window.resetSearchSort=function(){ state.filter.sort="latest"; $("filterDrawer").classList.remove("open"); syncBodyLock(); renderSearchResults(($("searchPageInput")?.value||$("searchInput").value||"").trim()); };
+    function renderFilterDrawer(){
+      const cats=["all",...new Set(state.categories.map(c=>c.name).concat(state.products.map(p=>p.category).filter(Boolean)))];
+      $("filterDrawerBody").innerHTML=`<div class="filter-options"><label>Category</label><select class="field" id="drawerCategory">${cats.map(c=>`<option value="${c}" ${state.filter.category===c?"selected":""}>${c==="all"?"All Categories":c}</option>`).join("")}</select><label>Sort</label><select class="field" id="drawerSort"><option value="latest" ${state.filter.sort==="latest"?"selected":""}>Latest first</option><option value="low" ${state.filter.sort==="low"?"selected":""}>Price low to high</option><option value="high" ${state.filter.sort==="high"?"selected":""}>Price high to low</option><option value="rating" ${state.filter.sort==="rating"?"selected":""}>Best rating</option><option value="discount" ${state.filter.sort==="discount"?"selected":""}>Discount products</option><option value="featured" ${state.filter.sort==="featured"?"selected":""}>Featured</option><option value="stock" ${state.filter.sort==="stock"?"selected":""}>Available only</option></select></div><div class="filter-actions"><button class="btn ghost" onclick="resetMobileFilter()">Reset</button><button class="btn" onclick="applyMobileFilter()">Apply</button></div>`;
+    }
+    window.openFilterDrawer=function(){ renderFilterDrawer(); $("filterDrawer").classList.add("open"); document.body.style.overflow="hidden"; };
+    window.applyMobileFilter=function(){ state.filter.category=$("drawerCategory").value; state.filter.sort=$("drawerSort").value; $("categoryFilter").value=state.filter.category; $("sortFilter").value=state.filter.sort; $("filterDrawer").classList.remove("open"); document.body.style.overflow=""; renderCategories(); renderProducts(); };
+    window.resetMobileFilter=function(){ state.filter={search:"",category:"all",sort:"latest"}; $("searchInput").value=""; $("categoryFilter").value="all"; $("sortFilter").value="latest"; $("filterDrawer").classList.remove("open"); document.body.style.overflow=""; renderCategories(); renderProducts(); };
+    window.showProduct = function(id){
+      const p=state.products.find(x=>x.id===id); if(!p) return;
+      $("searchPage").classList.remove("open");
+      $("filterDrawer").classList.remove("open");
+      $("cartDrawer").classList.remove("open");
+      saveRecentlyViewed(id);
+      const related=state.products.filter(x=>x.id!==p.id && x.category===p.category).slice(0,4);
+      const imgs=imagesOf(p);
+      $("productDetail").innerHTML=`<div class="detail"><div class="gallery"><div class="gallery-track" id="productGalleryTrack" onscroll="syncGalleryDots()">${imgs.map(src=>`<div class="gallery-slide"><img src="${src}" alt="${p.name||""}"></div>`).join("")}</div>${imgs.length>1?`<div class="gallery-dots">${imgs.map((_,i)=>`<button class="gallery-dot ${i===0?"active":""}" onclick="slideProductImage(${i})" aria-label="Image ${i+1}"></button>`).join("")}</div>`:""}</div><div><div class="cat">${p.category||"General"} ${p.brand?`- ${p.brand}`:""}</div><h2>${p.name||"Product"}</h2><div class="mini-meta"><span class="rating-pill">${ratingOf(p)} ★</span><span>${reviewCountOf(p)} reviews</span></div><div class="price">${money(effectivePrice(p))}${originalPrice(p)>effectivePrice(p)?`<span class="old">${money(originalPrice(p))}</span>`:""}</div>${discount(p)?`<p><b>${discount(p)}% discount</b></p>`:""}<p class="${isInStock(p)?"in":"out"}"><b>${isInStock(p)?`In Stock (${stockQty(p)} left)`:"Out of Stock"}</b></p><p class="delivery-note">${deliveryInfo(p)} - ${estimateDeliveryText(p)}</p><p style="color:var(--muted);line-height:1.7">${p.description||p.shortDescription||"No description available."}</p><div class="spec-list">${specsOf(p).slice(0,6).map(([k,v])=>`<div><b>${k}</b><span>${v}</span></div>`).join("")||`<div><b>Quality</b><span>Zopnex verified</span></div>`}</div><label style="margin-top:14px">Delivery PIN Check</label><div class="search" style="border-radius:12px"><input id="pinCheck" placeholder="Enter PIN code"><button onclick="checkPinDelivery('${p.id}')">Check</button></div><p id="pinEstimate" class="delivery-note">${estimateDeliveryText(p)}</p><label style="margin-top:14px">Quantity</label><div class="qty"><button onclick="changeDetailQty(-1)">-</button><input class="field" id="detailQty" value="1" type="number" min="1" max="${Math.max(1,stockQty(p))}" style="width:86px"><button onclick="changeDetailQty(1)">+</button></div><div class="actions" style="margin-top:18px"><button class="btn ghost" onclick="addToCart('${p.id}', Number(document.getElementById('detailQty').value||1))">Add to Cart</button><button class="btn alt" onclick="buyNow('${p.id}', Number(document.getElementById('detailQty').value||1))">Buy Now</button></div></div></div><div style="margin-top:22px"><h3>Reviews</h3><div class="summary">${ratingOf(p)} ★ based on ${reviewCountOf(p)} customer reviews</div></div>${related.length?`<div style="margin-top:22px"><h3>Related products</h3><div class="grid">${related.map(productCard).join("")}</div></div>`:""}`;
+      $("productPage").classList.add("open");
+      document.body.style.overflow="hidden";
+    }
+    window.closeProductPage = function(){ $("productPage").classList.remove("open"); document.body.style.overflow=""; };
+    window.changeDetailQty = (n)=>{ const el=$("detailQty"); el.value=Math.max(1,Number(el.value||1)+n); };
+    window.checkPinDelivery=(id)=>{ const p=state.products.find(x=>x.id===id), pin=$("pinCheck")?.value||""; if(!/^\d{6}$/.test(pin)) return toast("Invalid PIN code"); $("pinEstimate").textContent=estimateDeliveryText(p,pin); toast("Delivery available"); };
+    function cartItemFromProduct(p,qty,variant={}){ const variantText=Object.entries(variant).map(([k,v])=>`${k}: ${v}`).join(", "); return {key:cartKey(p.id,variant),id:p.id,name:p.name,price:effectivePrice(p),oldPrice:originalPrice(p),image:imageOf(p),category:p.category,qty,variant,variantText,deliveryDays:estimateDays(p),returnable:p.returnable!==false}; }
+    function openVariantPicker(id,qty,mode){ const p=state.products.find(x=>x.id===id), groups=productVariantGroups(p||{}); if(!p || !groups.length) return false; $("variantTitle").textContent=p.name||"Choose Options"; $("variantBody").innerHTML=`<div class="variant-body">${groups.map(g=>`<div><label>${g.label}</label><select class="field variant-choice" data-key="${g.key}">${g.values.map(v=>`<option value="${v}">${v}</option>`).join("")}</select></div>`).join("")}<button class="btn" onclick="confirmVariantChoice('${id}',${Number(qty||1)},'${mode}')">${mode==="buy"?"Continue to Buy":"Add to Cart"}</button></div>`; $("variantModal").classList.add("open"); document.body.style.overflow="hidden"; return true; }
+    window.confirmVariantChoice=function(id,qty,mode){ const variant={}; document.querySelectorAll(".variant-choice").forEach(el=>variant[el.dataset.key]=el.value); $("variantModal").classList.remove("open"); document.body.style.overflow=document.querySelector(".product-page.open,.search-page.open,.modal.open,.drawer.open")?"hidden":""; mode==="buy" ? buyNow(id,qty,variant) : addToCart(id,qty,variant); };
+    window.addToCart = function(id, qty=1, variant={}){ const p=state.products.find(x=>x.id===id); if(!p) return; if(!isInStock(p)) return toast("Product unavailable hai"); if(productVariantGroups(p).length && !Object.keys(variant||{}).length) return openVariantPicker(id,qty,"cart"); qty=Math.max(1,Math.min(Number(qty||1),stockQty(p))); const item=cartItemFromProduct(p,qty,variant); const found=state.cart.find(i=>(i.key||i.id)===item.key); if(found) found.qty=Math.min(stockQty(p),found.qty+qty); else state.cart.push(item); saveCart(); renderCart(); toast("Product added to cart"); };
+    window.buyNow = function(id, qty=1, variant={}){ const p=state.products.find(x=>x.id===id); if(!p) return; if(!isInStock(p)) return toast("Product unavailable hai"); if(productVariantGroups(p).length && !Object.keys(variant||{}).length) return openVariantPicker(id,qty,"buy"); openCheckout("buyNow",[cartItemFromProduct(p,Math.max(1,Math.min(Number(qty||1),stockQty(p))),variant)]); };
+
+    function renderCart(){
+      if(!state.cart.length){ $("cartItems").innerHTML=`<div class="empty">Your cart is empty.</div>`; $("cartSummary").innerHTML=""; return; }
+      $("cartItems").innerHTML=state.cart.map(i=>`<div class="cart-item"><img src="${i.image}" alt=""><div><b>${i.name}</b>${variantTextFromItem(i)?`<div class="mini-meta">${variantTextFromItem(i)}</div>`:""}<div>${money(i.price)}</div><div class="qty"><button onclick="cartQty('${i.key||i.id}',-1)">-</button><span>${i.qty}</span><button onclick="cartQty('${i.key||i.id}',1)">+</button></div></div><strong>${money(i.price*i.qty)}</strong><button class="btn ghost cart-remove" onclick="removeCart('${i.key||i.id}')">Remove</button></div>`).join("");
+      const sub=state.cart.reduce((s,i)=>s+i.price*i.qty,0), del=deliveryFor(sub), grand=sub+del;
+      $("cartSummary").innerHTML=`<div class="sumrow"><span>Subtotal</span><b>${money(sub)}</b></div><div class="sumrow"><span>Delivery</span><b>${money(del)}</b></div><div class="sumrow total"><span>Total</span><span>${money(grand)}</span></div>`;
+    }
+    window.cartQty=(key,n)=>{ const i=state.cart.find(x=>(x.key||x.id)===key); if(!i)return; const p=state.products.find(x=>x.id===i.id); i.qty=Math.min(stockQty(p||{}),i.qty+n); if(i.qty<=0) state.cart=state.cart.filter(x=>(x.key||x.id)!==key); saveCart(); renderCart(); };
+    window.removeCart=(key)=>{ state.cart=state.cart.filter(x=>(x.key||x.id)!==key); saveCart(); renderCart(); };
+    function openCart(){ renderCart(); $("cartDrawer").classList.add("open"); }
+    function checkoutSteps(active){ const steps=["Address","Summary","Payment"]; return `<div class="checkout-steps">${steps.map((s,i)=>`<div class="checkout-step ${active===i+1?"active":""} ${active>i+1?"done":""}"><span>${i+1}</span>${s}</div>`).join("")}</div>`; }
+    function couponDiscount(coupon,subtotal){
+      if(!coupon) return 0;
+      const min=Number(coupon.minimumOrder||0), max=Number(coupon.maximumDiscount||0);
+      if(min && subtotal<min) return 0;
+      const raw=coupon.discountType==="percentage" ? Math.round(subtotal*Number(coupon.discountValue||0)/100) : Number(coupon.discountValue||0);
+      return Math.max(0,Math.min(raw,max||raw,subtotal));
+    }
+    function secureCheckoutItems(items){
+      return items.map(i=>{
+        const p=state.products.find(x=>x.id===i.id);
+        if(!p) return i;
+        return {...i,name:p.name,category:p.category,image:imageOf(p),price:effectivePrice(p),oldPrice:originalPrice(p),deliveryDays:estimateDays(p)};
+      });
+    }
+    function checkoutTotals(){ const items=secureCheckoutItems(state.checkout.items), subtotal=items.reduce((s,i)=>s+i.price*i.qty,0), deliveryCharge=deliveryFor(subtotal), discount=couponDiscount(state.checkout.coupon,subtotal), grandTotal=Math.max(0,subtotal+deliveryCharge-discount); return {items,subtotal,deliveryCharge,discount,grandTotal}; }
+    function stockIssueForItems(items){
+      const bad=(items||[]).find(i=>{ const p=state.products.find(x=>x.id===i.id); return !p || !isInStock(p) || Number(i.qty||1)>stockQty(p); });
+      if(!bad) return "";
+      const p=state.products.find(x=>x.id===bad.id);
+      if(!p || !isInStock(p)) return `${bad.name||"Product"} ab stock me available nahi hai`;
+      return `${bad.name||p.name} ke sirf ${stockQty(p)} left hain. Quantity update karein.`;
+    }
+    function openCheckout(type, items){
+      if(!items.length) return toast("Cart empty hai");
+      const stockIssue=stockIssueForItems(items);
+      if(stockIssue){ renderCart(); return toast(stockIssue); }
+      if(!requireLogin("Order karne ke liye Google login zaroori hai.")) return;
+      $("productPage").classList.remove("open");
+      $("searchPage").classList.remove("open");
+      $("cartDrawer").classList.remove("open");
+      state.checkout={type,items,address:addressFields(),note:"",coupon:null,orderId:genOrderId(),utr:"",paymentScreenshot:"",paymentMethod:(state.settings.codEnabled===false?"UPI":"COD")};
+      $("checkoutTitle").textContent=type==="buyNow"?"Buy Now Checkout":"Cart Checkout";
+      $("checkoutModal").classList.add("open");
+      document.body.style.overflow="hidden";
+      renderCheckoutAddress(false);
+    }
+    function checkoutHasAddress(){
+      const c=state.checkout?.address||{};
+      return Boolean(c.customerName&&c.mobile&&c.address&&c.villageCity&&c.state&&c.pincode);
+    }
+    function renderCheckoutAddress(edit=false){
+      const c=state.checkout.address;
+      if(!edit && checkoutHasAddress()){
+        $("checkoutBody").innerHTML=`${checkoutSteps(1)}<div class="summary address-view"><b>Delivery Address</b><p style="color:var(--muted);line-height:1.7">${c.customerName}, ${c.mobile}<br>${[c.address,c.villageCity,c.district,c.state,c.pincode].filter(Boolean).join(", ")}</p><div class="actions" style="grid-template-columns:1fr 1fr"><button class="btn ghost" onclick="renderCheckoutAddress(true)">Edit Address</button><button class="btn" onclick="renderCheckoutSummary()">Deliver Here</button></div></div>`;
+        return;
+      }
+      $("checkoutBody").innerHTML=`${checkoutSteps(1)}<form id="checkoutAddressForm" class="formgrid"><div><label>Full Name</label><input required class="field" name="customerName" value="${edit?c.customerName:""}"></div><div><label>Mobile Number</label><input required class="field" name="mobile" pattern="[0-9]{10,}" value="${edit?c.mobile:""}"></div><div><label>Alternate Mobile</label><input class="field" name="alternateMobile" value="${edit?c.alternateMobile:""}"></div><div><label>Village / City</label><input required class="field" name="villageCity" value="${edit?c.villageCity:""}"></div><div><label>District</label><input required class="field" name="district" value="${edit?c.district:""}"></div><div><label>State</label><input required class="field" name="state" value="${edit?c.state:""}"></div><div><label>PIN Code</label><input required class="field" name="pincode" value="${edit?c.pincode:""}"></div><div><label>Delivery Mode</label><select class="field" name="deliveryMode"><option ${edit&&c.deliveryMode==="Local Delivery"?"selected":""}>Local Delivery</option><option ${edit&&c.deliveryMode==="Courier Delivery"?"selected":""}>Courier Delivery</option></select></div><div class="full"><label>Full Address</label><textarea required class="field" name="address">${edit?c.address:""}</textarea></div><div class="full"><label>Order Note</label><input class="field" name="note" value="${edit?state.checkout.note||"":""}"></div><button class="btn full">Continue to Summary</button></form>`;
+      $("checkoutAddressForm").onsubmit=e=>{ e.preventDefault(); const fd=Object.fromEntries(new FormData(e.target).entries()); state.checkout.address=fd; state.checkout.note=fd.note||""; renderCheckoutSummary(); };
+    }
+    function renderCheckoutSummary(){
+      const t=checkoutTotals(), a=state.checkout.address;
+      $("checkoutBody").innerHTML=`${checkoutSteps(2)}<div class="summary"><b>Delivery Address</b><p style="color:var(--muted)">${a.customerName}, ${a.mobile}<br>${a.address}, ${a.villageCity}, ${a.district}, ${a.state} ${a.pincode}</p><p class="delivery-note">${estimateDeliveryText({deliveryDays:Math.max(...t.items.map(i=>Number(i.deliveryDays||4)))},a.pincode)}</p><button class="btn ghost" onclick="renderCheckoutAddress(true)">Edit Address</button></div><div class="summary"><b>Order Summary</b>${t.items.map(i=>`<div class="sumrow"><span>${i.name}${variantTextFromItem(i)?` <small>(${variantTextFromItem(i)})</small>`:""} x ${i.qty}</span><b>${money(i.price*i.qty)}</b></div>`).join("")}<div class="coupon-row"><input class="field" id="couponCode" placeholder="Coupon code" value="${state.checkout.coupon?.code||""}"><button class="btn ghost" onclick="applyCoupon()">Apply</button></div>${state.checkout.coupon?`<p class="in"><b>${state.checkout.coupon.code}</b> applied</p>`:""}<div class="sumrow"><span>Subtotal</span><b>${money(t.subtotal)}</b></div><div class="sumrow"><span>Delivery</span><b>${money(t.deliveryCharge)}</b></div>${t.discount?`<div class="sumrow"><span>Coupon discount</span><b>- ${money(t.discount)}</b></div>`:""}<div class="sumrow total"><span>Grand Total</span><span>${money(t.grandTotal)}</span></div></div><div class="actions" style="grid-template-columns:1fr 1fr"><button class="btn ghost" onclick="renderCheckoutAddress(false)">Back</button><button class="btn" onclick="renderCheckoutPayment()">Continue to Payment</button></div>`;
+    }
+    window.applyCoupon=function(){
+      const code=($("couponCode")?.value||"").trim().toUpperCase();
+      const c=state.coupons.find(x=>String(x.code||"").toUpperCase()===code);
+      if(!c){ state.checkout.coupon=null; renderCheckoutSummary(); return toast("Coupon not found"); }
+      const t={subtotal:state.checkout.items.reduce((s,i)=>s+i.price*i.qty,0)};
+      if(c.minimumOrder && t.subtotal<Number(c.minimumOrder)) return toast(`Minimum order ${money(c.minimumOrder)} required`);
+      state.checkout.coupon=c; renderCheckoutSummary(); toast("Coupon applied");
+    };
+    function upiQrUrl(amount,orderId){
+      const upi=String(state.settings.upiId||"").trim(), name=encodeURIComponent(state.settings.storeName||"Zopnex"), note=encodeURIComponent(`Order ID ${orderId}`);
+      const payload=`upi://pay?pa=${encodeURIComponent(upi)}&pn=${name}&am=${Number(amount||0).toFixed(2)}&cu=INR&tn=${note}`;
+      return upi ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(payload)}` : state.settings.upiQr;
+    }
+    function upiPaymentHtml(t){
+      const orderId=state.checkout.orderId;
+      if(!String(state.settings.upiId||"").trim() && !state.settings.upiQr) return `<div class="error">Admin ne UPI ID/QR set nahi kiya hai. COD select karein ya support se contact karein.</div>`;
+      return `<div class="upi-box"><img src="${upiQrUrl(t.grandTotal,orderId)}" alt="UPI QR"><div><h3 style="margin-top:0">Scan and Pay</h3><p>Amount: <b>${money(t.grandTotal)}</b></p><p>UPI ID: <b>${state.settings.upiId||"QR uploaded by admin"}</b></p><p>Payment note me ye likhein: <b>Order ID ${orderId}</b></p><label>UTR / Transaction ID</label><input class="field" id="upiUtr" placeholder="Enter UTR after payment" value="${state.checkout.utr||""}"><label style="margin-top:10px">Payment Screenshot (optional)</label><input class="field" id="upiShotFile" type="file" accept="image/*"><small style="color:var(--muted);display:block;margin-top:6px">Screenshot Cloudinary par upload hoga.</small></div></div>`;
+    }
+    function renderCheckoutPayment(){
+      const t=checkoutTotals(), codEnabled=state.settings.codEnabled!==false;
+      if(!codEnabled && state.checkout.paymentMethod==="COD") state.checkout.paymentMethod="UPI";
+      $("checkoutBody").innerHTML=`${checkoutSteps(3)}<div class="trust-strip"><div class="trust-item">Manual payment<small>UPI QR + UTR</small></div><div class="trust-item">Easy support<small>Chat after order</small></div><div class="trust-item">Invoice ready<small>Download from orders</small></div></div><div class="summary"><b>Amount Payable</b><p>Order ID: <b>${state.checkout.orderId}</b></p>${t.discount?`<div class="sumrow"><span>Coupon discount</span><b>- ${money(t.discount)}</b></div>`:""}<div class="sumrow total"><span>Total</span><span>${money(t.grandTotal)}</span></div></div><div class="payment-choice"><label class="pay-card" style="${codEnabled?"":"opacity:.55"}"><input type="radio" name="payChoice" value="COD" ${state.checkout.paymentMethod==="COD"?"checked":""} ${codEnabled?"":"disabled"}>Cash on Delivery ${codEnabled?"":"(Currently unavailable)"}</label><label class="pay-card"><input type="radio" name="payChoice" value="UPI" ${state.checkout.paymentMethod==="UPI"?"checked":""}>Manual UPI Payment</label></div>${state.checkout.paymentMethod==="UPI"?upiPaymentHtml(t):""}<p style="color:var(--muted);font-size:13px;line-height:1.6">UPI payment ke baad UTR enter karein. Admin verify karne ke baad payment status Paid karega.</p><div class="actions" style="grid-template-columns:1fr 1fr"><button class="btn ghost" onclick="renderCheckoutSummary()">Back</button><button class="btn" onclick="confirmCheckoutPayment()">Confirm Order</button></div>`;
+      document.querySelectorAll("input[name='payChoice']").forEach(r=>r.onchange=e=>{ state.checkout.paymentMethod=e.target.value; renderCheckoutPayment(); });
+    }
+    async function confirmCheckoutPayment(){
+      const t=checkoutTotals(), method=state.checkout.paymentMethod;
+      if(method==="COD") return saveConfirmedOrder("COD","Unpaid");
+      state.checkout.utr=($("upiUtr")?.value||"").trim();
+      if(!state.checkout.utr) return toast("UPI payment ke baad UTR enter karein");
+      const shotFile=$("upiShotFile")?.files?.[0];
+      if(shotFile){
+        toast("Screenshot upload ho raha hai...");
+        try{ state.checkout.paymentScreenshot=await uploadCloudinary(shotFile); }
+        catch(err){ console.error(err); return toast("Screenshot upload failed"); }
+      }
+      return saveConfirmedOrder("UPI","Pending Verification",state.checkout.orderId,{upiUtr:state.checkout.utr,paymentScreenshot:state.checkout.paymentScreenshot});
+    }
+    async function saveConfirmedOrder(paymentMethod,paymentStatus,confirmedOrderId="",paymentData={}){
+      const t=checkoutTotals(), fd=state.checkout.address, orderId=confirmedOrderId || state.checkout.orderId || genOrderId();
+      const maxDays=Math.max(...t.items.map(i=>Number(i.deliveryDays||4))), expected=new Date(); expected.setDate(expected.getDate()+maxDays);
+      const expectedDeliveryDate=expected.toISOString().slice(0,10);
+      const orderIntegrity={source:"product-master-price",checkedAt:new Date().toISOString(),itemCount:t.items.length};
+      const order={orderId,checkoutType:state.checkout.type,customerUid:state.user?.uid||"",customerEmail:state.user?.email||"",...fd,note:state.checkout.note||"",items:t.items,subtotal:t.subtotal,deliveryCharge:t.deliveryCharge,couponCode:state.checkout.coupon?.code||"",discount:t.discount,grandTotal:t.grandTotal,orderIntegrity,paymentMethod,paymentStatus,upiUtr:paymentData.upiUtr||"",paymentScreenshot:paymentData.paymentScreenshot||"",paymentNote:paymentMethod==="UPI"?`Order ID ${orderId}`:"",orderStatus:"Placed",deliveryStatus:"Pending",deliveryBoyName:"",deliveryBoyMobile:"",courierName:"",trackingId:"",trackingLink:"",expectedDeliveryDate,codAmount:paymentMethod==="COD"?t.grandTotal:0,codRemittanceStatus:paymentMethod==="COD"?"Pending":"Not Applicable",codRemittanceDate:"",createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+      try{ const stockIssue=stockIssueForItems(t.items); if(stockIssue) return toast(stockIssue); await saveCustomerProfile({...fd,name:fd.customerName,lastOrderId:orderId}); await addDoc(collection(db,"orders"),order); await Promise.all(t.items.map(i=>{ const p=state.products.find(x=>x.id===i.id); if(!p) return Promise.resolve(); const left=Math.max(0,stockQty(p)-Number(i.qty||1)); p.stockQty=left; p.stockStatus=left>0?"Available":"Out of Stock"; return updateDoc(doc(db,"products",i.id),{stockQty:left,stockStatus:p.stockStatus,updatedAt:serverTimestamp()}).catch(err=>console.warn("Stock update skipped",err)); })); localStorage.setItem("zopnex_recent_order",JSON.stringify({orderId,mobile:fd.mobile}));
+        if(state.checkout.type==="cart"){ state.cart=[]; saveCart(); renderCart(); }
+        $("checkoutBody").innerHTML=`<div class="empty"><h2>Order placed successfully</h2><p>Your Order ID is <b>${orderId}</b></p><p>Payment: <b>${paymentMethod}</b> (${paymentStatus})</p><button class="btn" onclick="openTrack('${orderId}')">Track Order</button>${state.settings.whatsapp?`<a class="btn ghost" style="display:inline-block;margin-left:8px;text-decoration:none" href="https://wa.me/${state.settings.whatsapp}?text=New order ${orderId}" target="_blank">WhatsApp</a>`:""}</div>`; toast("Order placed successfully");
+      }catch(err){ console.error(err); toast("Order save nahi hua. Firebase rules check karein."); }
+    }
+    window.renderCheckoutAddress=renderCheckoutAddress; window.renderCheckoutSummary=renderCheckoutSummary; window.renderCheckoutPayment=renderCheckoutPayment; window.confirmCheckoutPayment=confirmCheckoutPayment;
+    window.openTrack=(oid="")=>{ closeProfileMenu(); $("trackOrderId").value=oid; $("trackModal").classList.add("open"); if(oid) trackOrder(); else $("trackResult").innerHTML=""; };
+    async function trackOrder(){
+      const oid=$("trackOrderId").value.trim(); if(!oid) return toast("Order ID enter karein");
+      $("trackResult").innerHTML=`<div class="loading">Tracking order...</div>`;
+      try{ const snap=await getDocs(query(collection(db,"orders"),where("orderId","==",oid))); const orders=snap.docs.map(d=>d.data()); if(!orders.length){ $("trackResult").innerHTML=`<div class="empty">Order not found.</div>`; return; } const o=orders[0]; const steps=["Placed","Accepted","Packed","Shipped","Out for Delivery","Delivered"]; const current=steps.indexOf(o.deliveryStatus||o.orderStatus);
+        $("trackResult").innerHTML=`<div class="summary"><h3>${o.orderId}</h3><p><b>${o.customerName}</b> - ${o.mobile}</p>${(o.items||[]).map(i=>`<div class="sumrow"><span>${i.name} x ${i.qty}</span><b>${money(i.price*i.qty)}</b></div>`).join("")}<div class="sumrow total"><span>Total</span><span>${money(o.grandTotal)}</span></div><p>Payment: <b>${o.paymentMethod}</b> (${o.paymentStatus})</p><p>Current status: <b>${o.deliveryStatus||o.orderStatus}</b></p><p>Mode: ${o.deliveryMode||"-"} - Courier: ${o.courierName||"-"} - Tracking: ${o.trackingId||"Not assigned yet"}</p>${o.trackingLink?`<a class="btn ghost" href="${o.trackingLink}" target="_blank">Open Tracking Link</a>`:""}<p>Expected delivery: ${o.expectedDeliveryDate||"Will be updated soon"}</p><div class="timeline">${steps.map((s,i)=>`<div class="step ${i<=Math.max(0,current)?"done":""}">${s}</div>`).join("")}</div></div>`;
+      }catch(err){ console.error(err); $("trackResult").innerHTML=`<div class="error">Tracking failed. Firebase rules check karein.</div>`; }
+    }
+    function orderNotifications(){
+      const readAt=Number(localStorage.getItem("zopnex_notifications_read_at")||0);
+      return (state.myOrders||[]).slice(0,8).map(o=>({title:`Order ${o.orderId}`,body:`Status: ${o.deliveryStatus||o.orderStatus||"Placed"}${o.trackingId?` | Tracking: ${o.trackingId}`:""}`,date:dateText(o.updatedAt)||dateText(o.createdAt),unread:(o.updatedAt?.seconds||o.createdAt?.seconds||0)>readAt}));
+    }
+    function unreadNotificationCount(){ const readAt=Number(localStorage.getItem("zopnex_notifications_read_at")||0); return (state.myOrders||[]).filter(o=>(o.updatedAt?.seconds||o.createdAt?.seconds||0)>readAt).length; }
+    async function openNotifications(){
+      if(!requireLogin("Notifications ke liye login karein.")) return;
+      closeProfileMenu();
+      if(!state.myOrders.length) await openMyOrders();
+      $("myOrdersModal").classList.remove("open");
+      $("accountBody").innerHTML=`<div class="notify-list"><button class="btn ghost" onclick="markNotificationsRead()">Mark all as read</button>${orderNotifications().map(n=>`<div class="notify-card" style="${n.unread?"border-color:var(--brand)":""}"><b>${n.title}</b> ${n.unread?`<span class="badge">Unread</span>`:""}<p style="margin:8px 0;color:var(--muted)">${n.body}</p><small>${n.date||""}</small></div>`).join("")||`<div class="empty">Abhi koi notification nahi hai.</div>`}</div>`;
+      document.querySelector("#accountModal h2").textContent="Notifications";
+      $("accountModal").classList.add("open");
+    }
+    window.markNotificationsRead=()=>{ localStorage.setItem("zopnex_notifications_read_at",String(Math.floor(Date.now()/1000))); openNotifications(); toast("Notifications marked read"); };
+    function firstOrderItem(o){ return (o.items||[])[0] || {}; }
+    function orderStatusInfo(o){
+      const raw=o.deliveryStatus||o.orderStatus||"Placed";
+      const d=dateText(o.updatedAt)||dateText(o.createdAt);
+      const tone=String(raw).toLowerCase().replace(/\s+/g,"-");
+      if(["Cancelled","RTO","Returned","Payment Failed"].includes(raw)) return {bad:true,tone,title:`${raw}${d?` on ${d}`:""}`,sub:raw==="Cancelled"?"Your order was cancelled as per your request.":"Your order has been updated."};
+      if(raw==="Delivered") return {bad:false,tone,title:`Delivered${d?` on ${d}`:""}`,sub:"Your item has been delivered"};
+      return {bad:false,tone,title:`${raw}${d?` on ${d}`:""}`,sub:"Your order is being processed"};
+    }
+    function returnEligibility(o){
+      const delivered=(o.deliveryStatus||o.orderStatus)==="Delivered";
+      if(!delivered) return {allowed:false,reason:"Return/replacement delivery ke baad available hoga."};
+      const item=firstOrderItem(o), product=state.products.find(p=>p.id===item.id || p.name===item.name);
+      if(product?.returnable===false || item.returnable===false) return {allowed:false,reason:"This product is marked non-returnable."};
+      const base=o.deliveredAt || o.updatedAt || o.createdAt, deliveredDate=base?.toDate ? base.toDate() : (base ? new Date(base) : new Date());
+      const days=Math.floor((Date.now()-deliveredDate.getTime())/86400000);
+      if(days>7) return {allowed:false,reason:"Return window 7 din ka tha, ab expire ho gaya hai."};
+      return {allowed:true,reason:`Return window open hai (${Math.max(0,7-days)} din left).`};
+    }
+    function renderOrderCard(o){
+      const item=firstOrderItem(o), st=orderStatusInfo(o);
+      return `<div class="order-row" onclick="openOrderDetails('${o.orderId}')"><img src="${item.image||imageOf({})}" alt=""><div><div class="order-title">${item.name||o.orderId}</div><div class="order-meta">${item.category?`Category: ${item.category}`:""} ${variantTextFromItem(item)?` | ${variantTextFromItem(item)}`:""} ${item.qty?` Qty: ${item.qty}`:""}</div></div><strong>${money(item.price ? item.price*(item.qty||1) : o.grandTotal)}</strong><div class="order-status"><b><span class="status-dot ${st.tone} ${st.bad?"bad":""}"></span>${st.title}</b><p style="margin:10px 0 0">${st.sub}</p>${!st.bad?`<div class="review-link">Star Rate &amp; Review Product</div>`:""}</div></div>`;
+    }
+    async function openMyOrders(){
+      if(!requireLogin("My Orders dekhne ke liye Google login karein.")) return;
+      closeProfileMenu();
+      $("myOrdersModal").classList.add("open");
+      $("myOrdersBody").innerHTML=`<div class="loading">Loading your orders...</div>`;
+      try{
+        const snap = await getDocs(query(collection(db,"orders"),where("customerUid","==",state.user.uid)));
+        let orders = snap.docs.map(d=>({id:d.id,...d.data()}));
+        if(!orders.length && state.customer.mobile){
+          const mobileSnap = await getDocs(query(collection(db,"orders"),where("mobile","==",state.customer.mobile))).catch(()=>({docs:[]}));
+          orders = mobileSnap.docs.map(d=>({id:d.id,...d.data()}));
+        }
+        orders.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        state.myOrders=orders;
+        const rrSnap = await getDocs(query(collection(db,"returnRequests"),where("customerUid","==",state.user.uid))).catch(()=>({docs:[]}));
+        state.returnRequests = rrSnap.docs.map(d=>({id:d.id,...d.data()}));
+        $("myOrdersBody").innerHTML = orders.length ? `<div class="orders-shell">${orders.map(renderOrderCard).join("")}</div>` : `<div class="empty">Abhi koi order nahi mila. First order place karte hi yahan dikhega.</div>`;
+      }catch(err){
+        console.error(err);
+        $("myOrdersBody").innerHTML=`<div class="error">Orders load nahi hue. Firestore rules me customer ko apne orders read karne ki permission dein.</div>`;
+      }
+    }
+    function renderRatingStars(orderId, current=0, enabled=true){
+      return `<div class="stars">${[1,2,3,4,5].map(n=>`<button class="rate-star ${n<=current?"active":""}" ${enabled?`onclick="rateOrderProduct('${orderId}',${n})"`:"disabled title='Delivery ke baad rating available hogi'"}>${n<=current?"★":"☆"}</button>`).join("")}</div>`;
+    }
+    window.rateOrderProduct = async function(orderId,rating){
+      const o=(state.myOrders||[]).find(x=>x.orderId===orderId);
+      if(!o) return toast("Order details not found");
+      if((o.deliveryStatus||o.orderStatus)!=="Delivered") return toast("Delivery ke baad rating available hogi");
+      const item=firstOrderItem(o);
+      o.userRating=rating;
+      try{
+        await addDoc(collection(db,"productReviews"),{orderId,productId:item.id||"",productName:item.name||"",customerUid:state.user?.uid||"",customerName:state.user?.displayName||state.customer.customerName||"",rating,createdAt:serverTimestamp()});
+      }catch(err){ console.warn("Review save skipped",err); }
+      const box=$("ratingStarsBox");
+      if(box) box.innerHTML=renderRatingStars(orderId,rating,true)+`<p class="in" style="margin:8px 0 0"><b>${rating} star rating saved</b></p>`;
+      toast("Thanks for rating");
+    };
+    function returnStatusHtml(orderId){
+      const list=(state.returnRequests||[]).filter(r=>r.orderId===orderId).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      if(!list.length) return "";
+      const r=list[0], status=r.status||"Pending", flow=["Pending","Approved","Replacement Sent","Refund Pending","Refund Done"];
+      const idx=Math.max(0,flow.indexOf(status));
+      return `<div class="return-status-card"><b>Return / Refund Status</b><p class="delivery-note">${r.type||"Return"} request: <b>${status}</b>${r.reason?` - ${r.reason}`:""}</p><div class="return-flow">${flow.map((s,i)=>`<div class="return-step ${i<=idx?"done":""}">${s}</div>`).join("")}</div>${r.details?`<p style="color:var(--muted);line-height:1.5">${r.details}</p>`:""}${r.proofUrl?`<a class="download-invoice" href="${r.proofUrl}" target="_blank" rel="noopener">View Uploaded Proof</a>`:""}</div>`;
+    }
+    async function openOrderDetails(orderId){
+      let o=(state.myOrders||[]).find(x=>x.orderId===orderId);
+      if(!o){
+        const snap=await getDocs(query(collection(db,"orders"),where("orderId","==",orderId))).catch(()=>({docs:[]}));
+        if(snap.docs.length) o={id:snap.docs[0].id,...snap.docs[0].data()};
+      }
+      if(!o) return toast("Order details not found");
+      const item=firstOrderItem(o), st=orderStatusInfo(o), delivered=(o.deliveryStatus||o.orderStatus)==="Delivered", canReturn=returnEligibility(o).allowed;
+      const allItems=(o.items||[]).map(i=>`<div class="sumrow"><span>${i.name}${variantTextFromItem(i)?` <small>(${variantTextFromItem(i)})</small>`:""} x ${i.qty}</span><b>${money(i.price*i.qty)}</b></div>`).join("");
+      const steps=["Placed","Accepted","Packed","Shipped","Out for Delivery","Delivered"], current=steps.indexOf(o.deliveryStatus||o.orderStatus);
+      $("myOrdersBody").innerHTML=`<div class="order-detail-shell"><div class="order-breadcrumb"><button class="btn ghost" onclick="openMyOrders()">Back</button> Home &gt; My Account &gt; My Orders &gt; ${o.orderId}</div><div class="order-detail-top"><div><h3>Order Details</h3><span class="order-id-pill">${o.orderId}</span></div><button class="btn ghost" onclick="openMyOrders()">Back</button></div><div class="detail-layout"><div><div class="order-hero-card"><div class="order-product-clean"><img src="${item.image||imageOf({})}" alt=""><div><h2 style="font-size:20px;margin:0 0 8px">${item.name||"Order Item"}</h2><p style="color:var(--muted);margin:0 0 10px">${item.category?`Category: ${item.category}`:"Zopnex product"} ${variantTextFromItem(item)?`, ${variantTextFromItem(item)}`:""} ${item.qty?`, Qty: ${item.qty}`:""}</p><div class="price">${money(item.price||o.grandTotal)}</div><div class="status-card"><span class="status-dot ${st.tone} ${st.bad?"bad":""}" style="margin-top:4px"></span><div><b>${st.title}</b><p style="margin:6px 0 0;color:var(--muted)">${st.sub}</p></div></div></div></div><div class="timeline">${steps.map((s,i)=>`<div class="step ${i<=Math.max(0,current)?"done":""}">${s}</div>`).join("")}</div>${returnStatusHtml(o.orderId)}<div class="order-actions-clean"><button class="download-invoice" onclick="openSupport('${o.orderId}')">Chat with us</button>${canReturn?`<button class="download-invoice" onclick="openReturnRequest('${o.orderId}')">Return / Replacement</button>`:`<button class="download-invoice" onclick="downloadUserInvoice('${o.orderId}')">Download Invoice</button>`}</div>${!canReturn&&delivered?`<p class="delivery-note">${returnEligibility(o).reason}</p>`:""}</div><div class="rate-box"><h3>Rate your experience</h3><div class="address-chip"><b>${delivered?"Rate the product":"Rating opens after delivery"}</b><div id="ratingStarsBox">${renderRatingStars(o.orderId,Number(o.userRating||0),delivered)}</div>${delivered?`<div class="review-form"><textarea class="field" id="reviewText" placeholder="Write product review"></textarea><input class="field" id="reviewPhoto" placeholder="Photo URL (optional)"><button class="btn ghost" onclick="saveProductReview('${o.orderId}')">Save Review</button></div>`:`<p style="color:var(--muted);margin:8px 0 0">Product deliver hone ke baad rating submit kar sakte hain.</p>`}</div></div></div><div class="order-side-stack"><div class="order-side-card"><h3>Delivery Details</h3><div class="address-chip"><b>Home</b><p style="margin:8px 0;color:var(--muted);line-height:1.55">${[o.address,o.villageCity,o.district,o.state,o.pincode].filter(Boolean).join(", ")}</p><b>${o.customerName||""}</b> ${o.mobile||""}<br><small>Expected: ${o.expectedDeliveryDate||"Will be updated soon"}</small></div></div><div class="order-side-card"><h3>Price Details</h3><div class="sumrow"><span>Listing price</span><span>${money((o.items||[]).reduce((s,i)=>s+(i.oldPrice||i.price||0)*(i.qty||1),0)||o.subtotal)}</span></div><div class="sumrow"><span>Special price</span><span>${money(o.subtotal)}</span></div><div class="sumrow"><span>Delivery</span><span>${money(o.deliveryCharge)}</span></div>${o.discount?`<div class="sumrow"><span>Coupon discount</span><span>- ${money(o.discount)}</span></div>`:""}${allItems}<div class="sumrow total"><span>Total amount</span><span>${money(o.grandTotal)}</span></div><div class="paid-chip">Paid By <b style="float:right">${o.paymentMethod||"-"}</b><br><small>Status: ${o.paymentStatus||"-"}</small></div><button class="download-invoice primary" onclick="downloadUserInvoice('${o.orderId}')">Download Invoice PDF</button></div></div></div></div>`;
+    }
+    window.saveProductReview=async function(orderId){
+      const o=(state.myOrders||[]).find(x=>x.orderId===orderId), item=firstOrderItem(o||{});
+      if(!o) return toast("Order details not found");
+      await addDoc(collection(db,"productReviews"),{orderId,productId:item.id||"",productName:item.name||"",customerUid:state.user?.uid||"",customerName:state.user?.displayName||state.customer.customerName||"",rating:Number(o.userRating||5),reviewText:$("reviewText")?.value||"",photoUrl:$("reviewPhoto")?.value||"",createdAt:serverTimestamp()}).catch(err=>console.warn(err));
+      toast("Review saved");
+    };
+    window.openReturnRequest=function(orderId){
+      const o=(state.myOrders||[]).find(x=>x.orderId===orderId), item=firstOrderItem(o||{});
+      if(!o) return;
+      const eligibility=returnEligibility(o);
+      if(!eligibility.allowed) return toast(eligibility.reason);
+      $("accountBody").innerHTML=`<form id="returnForm" class="formgrid"><div><label>Request Type</label><select class="field" name="type"><option>Return</option><option>Replacement</option></select></div><div><label>Reason</label><select class="field" name="reason"><option>Damaged product</option><option>Wrong item received</option><option>Missing item</option><option>Quality issue</option><option>Other</option></select></div><div class="full"><label>Details</label><textarea class="field" name="details" required placeholder="Problem details"></textarea></div><div class="full"><label>Photo Upload</label><input class="field" name="proofFile" type="file" accept="image/*"></div><button class="btn full">Submit Request</button></form>`;
+      document.querySelector("#accountModal h2").textContent=`Return / Replacement - ${orderId}`;
+      $("accountModal").classList.add("open");
+      $("returnForm").onsubmit=async e=>{ e.preventDefault(); const form=e.target, fd=Object.fromEntries(new FormData(form).entries()); let proofUrl=""; if(form.proofFile.files[0]){ toast("Proof upload ho raha hai..."); proofUrl=await uploadCloudinary(form.proofFile.files[0]).catch(err=>{ console.warn(err); return ""; }); } delete fd.proofFile; const req={orderId,productName:item.name||"",customerUid:state.user?.uid||"",customerName:o.customerName||"",status:"Pending",proofUrl,...fd,createdAt:serverTimestamp(),updatedAt:serverTimestamp()}; await addDoc(collection(db,"returnRequests"),req).catch(err=>console.warn(err)); state.returnRequests=[{...req,createdAt:{seconds:Math.floor(Date.now()/1000)}},...(state.returnRequests||[])]; toast("Request submitted"); $("accountModal").classList.remove("open"); openOrderDetails(orderId); };
+    };
+    function openWishlist(){
+      closeProfileMenu();
+      const items = state.wishlist.map(id=>state.products.find(p=>p.id===id)).filter(Boolean);
+      $("wishlistBody").innerHTML = items.length ? items.map(p=>`<div class="wish-item"><img src="${imageOf(p)}" alt=""><div><b>${p.name||"Product"}</b><div class="cat">${p.category||"General"}</div><div class="price">${money(effectivePrice(p))}</div></div><div class="actions" style="grid-template-columns:1fr"><button class="btn ghost" onclick="toggleWishlist('${p.id}')">Remove</button><button class="btn" onclick="buyNow('${p.id}')">Buy Now</button></div></div>`).join("") : `<div class="empty">Wishlist empty hai. Product ke heart par click karke save karein.</div>`;
+      $("wishlistModal").classList.add("open");
+    }
+    function pdfEscapeText(text){ return String(text||"").replace(/[^\x20-\x7E]/g," ").replace(/[\\()]/g,"\\$&"); }
+    function pdfText(text,x,y,size=10,bold=false){ return `BT /${bold?"F2":"F1"} ${size} Tf ${x} ${y} Td (${pdfEscapeText(text)}) Tj ET`; }
+    function pdfLine(x1,y1,x2,y2){ return `${x1} ${y1} m ${x2} ${y2} l S`; }
+    function pdfRect(x,y,w,h,fill=false){ return `${x} ${y} ${w} ${h} re ${fill?"f":"S"}`; }
+    function downloadInvoicePdf(o){
+      const invoiceNo=`INV-${String(o.orderId||"ZPX").replace(/[^A-Z0-9]/gi,"")}`;
+      const date=dateText(o.createdAt)||new Date().toLocaleDateString("en-IN"), addr=[o.address,o.villageCity,o.district,o.state,o.pincode].filter(Boolean).join(", ");
+      const ops=["0.96 0.98 1 rg",pdfRect(36,742,523,64,true),"0.05 0.13 0.25 RG","0.05 0.13 0.25 rg",pdfText("Zopnex",54,782,24,true),pdfText("Shop Smart. Delivered Easy.",54,762,10,false),pdfText("TAX INVOICE",430,782,18,true),pdfText(`Invoice: ${invoiceNo}`,430,762,9,false),"0 0 0 RG","0 0 0 rg"];
+      ops.push(pdfText(`Order ID: ${o.orderId||"-"}`,50,718,11,true),pdfText(`Date: ${date}`,50,700,10),pdfText(`Payment: ${o.paymentMethod||"-"} (${o.paymentStatus||"-"})`,50,682,10),pdfLine(36,664,559,664));
+      ops.push(pdfText("Bill To",50,638,12,true),pdfText(o.customerName||"-",50,620,10,true),pdfText(o.mobile||"",50,604,9),pdfText(o.customerEmail||"",50,590,9),pdfText("Ship To",330,638,12,true),pdfText(addr.slice(0,45)||"-",330,620,9),pdfText(addr.slice(45,90),330,604,9));
+      ops.push("0.94 0.96 0.98 rg",pdfRect(50,548,495,24,true),"0 0 0 rg",pdfText("Product",58,556,10,true),pdfText("Qty",330,556,10,true),pdfText("Price",382,556,10,true),pdfText("Total",470,556,10,true),pdfLine(50,548,545,548));
+      let y=524;
+      (o.items||[]).forEach(i=>{ const total=Number(i.price||0)*Number(i.qty||1); ops.push(pdfText(String(i.name||"Product").slice(0,42),58,y,9),pdfText(String(i.qty||1),334,y,9),pdfText(`Rs ${Number(i.price||0).toFixed(2)}`,382,y,9),pdfText(`Rs ${total.toFixed(2)}`,470,y,9),pdfLine(50,y-10,545,y-10)); y-=26; });
+      y=Math.min(y,430);
+      const rightX=366, valX=470;
+      ops.push(pdfText("Subtotal",rightX,y,10),pdfText(`Rs ${Number(o.subtotal||0).toFixed(2)}`,valX,y,10)); y-=18;
+      ops.push(pdfText("Delivery",rightX,y,10),pdfText(`Rs ${Number(o.deliveryCharge||0).toFixed(2)}`,valX,y,10)); y-=18;
+      if(o.discount){ ops.push(pdfText("Coupon Discount",rightX,y,10),pdfText(`- Rs ${Number(o.discount||0).toFixed(2)}`,valX,y,10)); y-=18; }
+      ops.push(pdfLine(rightX,y+8,545,y+8),pdfText("Grand Total",rightX,y-10,13,true),pdfText(`Rs ${Number(o.grandTotal||0).toFixed(2)}`,valX,y-10,13,true));
+      ops.push("0.96 0.98 1 rg",pdfRect(50,74,495,54,true),"0 0 0 rg",pdfText("This is a computer generated invoice.",64,106,9),pdfText("For payment, return, or delivery support, use Chat with us from My Orders.",64,90,9));
+      const content=ops.join("\n");
+      const objects=[
+        "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+        "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+        "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+        "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
+        `5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`,
+        "6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n"
+      ];
+      let pdf="%PDF-1.4\n", offsets=[0];
+      objects.forEach(obj=>{ offsets.push(pdf.length); pdf+=obj; });
+      const xrefAt=pdf.length;
+      pdf+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n${offsets.slice(1).map(n=>String(n).padStart(10,"0")+" 00000 n ").join("\n")}\ntrailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF`;
+      const blob=new Blob([pdf],{type:"application/pdf"}), url=URL.createObjectURL(blob), a=document.createElement("a");
+      a.href=url; a.download=`${invoiceNo}.pdf`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),800);
+    }
+    async function downloadUserInvoice(orderId){
+      let order=null;
+      const snap=await getDocs(query(collection(db,"orders"),where("orderId","==",orderId))).catch(()=>({docs:[]}));
+      if(snap.docs.length) order=snap.docs[0].data();
+      if(!order) return toast("Invoice order not found");
+      downloadInvoicePdf(order);
+      toast("Invoice PDF downloading");
+    }
+    function supportOrder(orderId){
+      return (state.myOrders||[]).find(o=>o.orderId===orderId) || null;
+    }
+    function supportQuickOptions(orderId){
+      const o=supportOrder(orderId), raw=o?.deliveryStatus||o?.orderStatus||"";
+      const delivered=raw==="Delivered";
+      if(delivered){
+        return [
+          ["Rate this product",`I want to rate my delivered product for order ${orderId}.`],
+          ["Return or replace item",`I need help with return or replacement for delivered order ${orderId}.`],
+          ["Product damaged or missing",`Delivered order ${orderId} has a damaged, missing, or wrong item.`],
+          ["Get invoice",`Please share invoice/bill for delivered order ${orderId}.`],
+          ["Warranty or service help",`I need warranty/service help for delivered order ${orderId}.`],
+          ["Talk to support",`I still need help with delivered order ${orderId}.`]
+        ];
+      }
+      if(orderId){
+        return [
+          ["Where is my order?",`Where is my order ${orderId}? Current status shown to me is ${raw||"not available"}.`],
+          ["Share latest status",`Please share latest status for order ${orderId}.`],
+          ["Get delivery agent number",`Please share delivery agent number for order ${orderId} if assigned.`],
+          ["Need faster delivery",`Can you arrange faster delivery for order ${orderId}?`],
+          ["Change delivery address",`I want to change delivery address for order ${orderId}.`],
+          ["Cancel this order",`I want to cancel order ${orderId}. Please confirm if possible.`]
+        ];
+      }
+      return [
+        ["Where is my order?", "I need help finding my order status."],
+        ["Payment issue", "I need help with payment for my order."],
+        ["Delivery issue", "I need help with delivery."],
+        ["Return or replacement", "I need help with return or replacement."],
+        ["Invoice or bill", "Please help me get my invoice or bill."],
+        ["Talk to support", "I still need help from support."]
+      ];
+    }
+    function genTicketId(){
+      const d=new Date(), pad=n=>String(n).padStart(2,"0");
+      return `ZPX-HELP-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${Math.floor(10000+Math.random()*90000)}`;
+    }
+    function supportAutoReply(message,orderId=""){
+      const text=String(message||"").toLowerCase(), o=supportOrder(orderId);
+      const status=o?.deliveryStatus||o?.orderStatus||"Placed", eta=o?.expectedDeliveryDate||"given delivery date", track=o?.trackingId?`Tracking ID: ${o.trackingId}`:"Tracking ID abhi assign nahi hua hai";
+      if(text.includes("where is my order") || text.includes("latest status") || text.includes("order status")){
+        if(!o) return "I can help with order status. Please select your order from My Orders or share your Order ID, then I will check it for you.";
+        return `Order status update<br><br>Order: <b>${orderId}</b><br>Current status: <b>${status}</b><br>${track}<br><br>We will keep updating this chat whenever admin adds a new delivery update.`;
+      }
+      if(text.includes("faster delivery") || text.includes("fast delivery")){
+        if(status==="Delivered") return `Order <b>${orderId}</b> is already delivered. If anything is still pending, please tell us and support will check it.`;
+        if(status==="Cancelled" || status==="Returned" || status==="RTO") return `Faster delivery is not possible because this order status is <b>${status}</b>. You can create a new order or wait for admin confirmation.`;
+        return `Delivery speed request noted<br><br>We cannot promise delivery before the committed date every time, but we will try our best to deliver before <b>${eta}</b>. If courier/local delivery has already started, admin will share the latest update here.`;
+      }
+      if(text.includes("delivery agent") || text.includes("agent number")){
+        if(o?.deliveryBoyMobile) return `Delivery agent details<br><br>Name: <b>${o.deliveryBoyName||"Delivery partner"}</b><br>Mobile: <b>${o.deliveryBoyMobile}</b>`;
+        return `Delivery agent number is not assigned yet. Once your order moves to Out for Delivery, admin will share the delivery partner details here.`;
+      }
+      if(text.includes("change delivery address") || text.includes("change address")){
+        if(["Shipped","Out for Delivery","Delivered"].includes(status)) return `Address change may not be possible now because your order is already <b>${status}</b>. Support will still check once and confirm here.`;
+        return `Address change request received. Please send the new full address with PIN code and mobile number. Admin will confirm after checking whether packing/shipping has started.`;
+      }
+      if(text.includes("cancel")){
+        if(status==="Delivered") return `This order is already delivered, so cancellation is not possible. You can request return/replacement if your item is eligible.`;
+        if(["Shipped","Out for Delivery"].includes(status)) return `Cancellation may not be possible because your order is already <b>${status}</b>. Admin will check with the delivery team and confirm.`;
+        return `Cancellation request received. If the order is not packed or shipped yet, admin will cancel it and update you here.`;
+      }
+      if(text.includes("invoice") || text.includes("bill")){
+        return `Invoice help<br><br>If your order is confirmed, invoice can be shared from admin side. Please keep this ticket open; support will send invoice details here.`;
+      }
+      if(text.includes("return") || text.includes("replace")){
+        if(status!=="Delivered") return `Return/replacement can start after delivery. Your current status is <b>${status}</b>. If there is another issue, please share details.`;
+        return `Return/replacement request received. Please share issue details, product photo/video if needed, and whether you want return or replacement. Admin will verify eligibility.`;
+      }
+      if(text.includes("damaged") || text.includes("missing") || text.includes("wrong item")){
+        return `Sorry for the trouble. Please upload/share clear photos or video of the package and product. Admin will verify and help with replacement, return, or missing item resolution.`;
+      }
+      if(text.includes("payment")){
+        return `Payment issue noted. Please share payment method, amount debited, and transaction/reference ID if available. Admin will verify payment status.`;
+      }
+      if(text.includes("warranty") || text.includes("service")){
+        return `Warranty/service help request received. Please share product name, order ID, issue details, and photo/video if possible. Support will guide the next step.`;
+      }
+      return "";
+    }
+    async function sendSupportMessage(message,orderId="",ticketId=state.supportTicket?.ticketId){
+      if(!message) return;
+      const o=supportOrder(orderId), id=ticketId||genTicketId();
+      state.supportTicket={ticketId:id,orderId};
+      await addDoc(collection(db,"supportChats"),{ticketId:id,customerUid:state.user.uid,customerName:state.user.displayName||state.customer.customerName||"",customerEmail:state.user.email||"",orderId,message,orderStatus:o?.orderStatus||"",deliveryStatus:o?.deliveryStatus||"",sender:"customer",status:"Open",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      const autoReply=supportAutoReply(message,orderId);
+      if(autoReply){
+        await addDoc(collection(db,"supportChats"),{ticketId:id,customerUid:state.user.uid,customerName:state.user.displayName||state.customer.customerName||"",customerEmail:state.user.email||"",orderId,message:autoReply,orderStatus:o?.orderStatus||"",deliveryStatus:o?.deliveryStatus||"",sender:"bot",status:"Open",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      }
+      toast("Message sent to admin");
+      if(!$("supportModal").classList.contains("open")) await openSupport(orderId,id);
+    }
+    function stopSupportLive(){
+      if(state.supportUnsub){ state.supportUnsub(); state.supportUnsub=null; }
+    }
+    async function closeSupportTicket(){
+      if(!state.supportTicket?.ticketId) return;
+      const ticketId=state.supportTicket.ticketId;
+      const previous=await getDocs(query(collection(db,"supportChats"),where("customerUid","==",state.user.uid))).catch(()=>({docs:[]}));
+      await Promise.all(previous.docs.filter(d=>d.data().ticketId===ticketId).map(d=>updateDoc(doc(db,"supportChats",d.id),{status:"Closed",updatedAt:serverTimestamp()}).catch(()=>{})));
+      stopSupportLive();
+      toast("Chat closed");
+      $("supportModal").classList.remove("open");
+      document.body.style.overflow="";
+    }
+    function groupSupportTickets(list){
+      const map=new Map();
+      list.forEach(c=>{
+        const key=c.ticketId||`${c.customerUid||"me"}-${c.orderId||"general"}`;
+        const t=map.get(key)||{ticketId:key,orderId:c.orderId||"",messages:[],latest:null,status:"Open"};
+        t.messages.push(c);
+        t.latest=!t.latest || (c.createdAt?.seconds||0)>(t.latest.createdAt?.seconds||0) ? c : t.latest;
+        t.status=t.messages.some(m=>m.status==="Closed")?"Closed":(t.messages.some(m=>m.sender==="admin")?"Replied":"Open");
+        map.set(key,t);
+      });
+      return [...map.values()].sort((a,b)=>(b.latest?.createdAt?.seconds||0)-(a.latest?.createdAt?.seconds||0));
+    }
+    async function loadSupportTickets(){
+      const snap=await getDocs(query(collection(db,"supportChats"),where("customerUid","==",state.user.uid))).catch(()=>({docs:[]}));
+      return groupSupportTickets(snap.docs.map(d=>({id:d.id,...d.data()})));
+    }
+    async function newSupportChat(orderId=""){
+      const tickets=await loadSupportTickets();
+      const open=tickets.find(t=>t.status!=="Closed");
+      if(open){
+        await Promise.all(open.messages.map(m=>updateDoc(doc(db,"supportChats",m.id),{status:"Closed",updatedAt:serverTimestamp()}).catch(()=>{})));
+      }
+      await openSupport(orderId,genTicketId());
+    }
+    function renderSupportPanel(tickets,orderId,activeTicket){
+      const resume=tickets.find(t=>t.ticketId===activeTicket);
+      orderId=orderId || resume?.orderId || "";
+      state.supportTicket={ticketId:activeTicket,orderId};
+      const draft=document.querySelector("#supportForm input[name='message']")?.value||"";
+      const chats=(resume?.messages||[]).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+      const bubbles=chats.map(c=>`<div class="${c.sender==='customer'?'user-bubble':'bot-bubble'}">${c.sender==="bot"?`<b>Zopnex Assistant</b><br>`:""}${c.message}${c.orderId?`<br><small>Order: ${c.orderId}</small>`:""}</div>`).join("");
+      const o=supportOrder(orderId), optionHtml=supportQuickOptions(orderId).map(([label,msg])=>`<button class="quick-option" data-quick="${msg.replace(/"/g,"&quot;")}">${label}</button>`).join("");
+      const history=tickets.map(t=>`<button class="quick-option chat-history-btn" data-order="${t.orderId||""}" data-ticket="${t.ticketId}"><b>${t.latest?.orderId?`Order ${t.latest.orderId}`:"General Support"}</b><br><small>${t.status} - Case ${String(t.ticketId).slice(-5)}${t.latest?.message?` - ${String(t.latest.message).slice(0,38)}`:""}</small></button>`).join("");
+      $("supportBody").innerHTML=`<div class="support-head"><div class="support-logo">Z</div><div style="flex:1"><h2 style="margin:0">Zopnex Support</h2><small style="color:var(--muted)">Case ${String(activeTicket).slice(-5)}${orderId?` - Order ${orderId}`:""}${o?` - ${o.deliveryStatus||o.orderStatus||"Placed"}`:""}</small></div><button class="btn ghost" onclick="newSupportChat('${orderId||""}')">New Chat</button><button class="btn ghost" onclick="closeSupportTicket()">Close Chat</button><button class="x" onclick="closeSupportWindow()">X</button></div><div class="support-chat" id="supportChatScroll"><div class="support-bot-card"><p>Chat History</p>${history||`<button class="quick-option" type="button">No previous chat</button>`}</div><div class="support-bot-card"><p>${chats.length?"Continue this support ticket.":"New support ticket ready. Select an option or write your issue."}</p>${optionHtml}</div>${bubbles||`<div class="bot-bubble">Ticket number <b>${activeTicket}</b> ready. First message will start this chat.</div>`}</div><form id="supportForm" class="support-input"><input name="message" placeholder="Write a Message..." required value="${draft.replace(/"/g,"&quot;")}"><input type="hidden" name="orderId" value="${orderId}"><button title="Send">&gt;</button></form>`;
+      $("supportForm").onsubmit=async e=>{ e.preventDefault(); const fd=Object.fromEntries(new FormData(e.target).entries()); e.target.reset(); await sendSupportMessage(fd.message,fd.orderId,activeTicket); };
+      document.querySelectorAll("[data-quick]").forEach(btn=>btn.onclick=()=>sendSupportMessage(btn.dataset.quick,orderId,activeTicket));
+      document.querySelectorAll(".chat-history-btn").forEach(btn=>btn.onclick=()=>openSupport(btn.dataset.order,btn.dataset.ticket));
+      setTimeout(()=>{ const el=$("supportChatScroll"); if(el) el.scrollTop=el.scrollHeight; },30);
+    }
+    function startSupportLive(orderId,activeTicket){
+      stopSupportLive();
+      state.supportUnsub=onSnapshot(query(collection(db,"supportChats"),where("customerUid","==",state.user.uid)),snap=>{
+        if(!$("supportModal").classList.contains("open")) return;
+        const tickets=groupSupportTickets(snap.docs.map(d=>({id:d.id,...d.data()})));
+        const current=tickets.find(t=>t.ticketId===activeTicket);
+        renderSupportPanel(tickets,orderId||current?.orderId||"",activeTicket);
+      },err=>console.warn("Support live skipped",err));
+    }
+    async function openSupport(orderId="",ticketId=""){
+      if(!requireLogin("Support chat ke liye Google login karein.")) return;
+      closeProfileMenu();
+      const tickets=await loadSupportTickets();
+      const resume=ticketId ? tickets.find(t=>t.ticketId===ticketId) : tickets.find(t=>t.status!=="Closed") || tickets[0];
+      const activeTicket=ticketId || resume?.ticketId || genTicketId();
+      orderId=orderId || resume?.orderId || "";
+      $("supportModal").classList.add("open");
+      document.body.style.overflow="hidden";
+      renderSupportPanel(tickets,orderId,activeTicket);
+      startSupportLive(orderId,activeTicket);
+    }
+    window.closeSupportWindow=function(){ stopSupportLive(); $("supportModal").classList.remove("open"); document.body.style.overflow=""; };
+    window.openAccount=openAccount; window.closeProfileMenu=closeProfileMenu;
+    window.openMyOrders=openMyOrders; window.openOrderDetails=openOrderDetails; window.openWishlist=openWishlist; window.openSupport=openSupport; window.newSupportChat=newSupportChat; window.closeSupportTicket=closeSupportTicket; window.downloadUserInvoice=downloadUserInvoice;
+
+    $("searchBtn").onclick=openSearchPage;
+    $("filterBtn").onclick=openFilterDrawer;
+    $("categoryFilter").onchange=e=>{ state.filter.category=e.target.value; renderCategories(); renderProducts(); };
+    $("sortFilter").onchange=e=>{ state.filter.sort=e.target.value; renderProducts(); };
+    $("resetBtn").onclick=()=>{ state.filter={search:"",category:"all",sort:"latest"}; $("searchInput").value=""; $("sortFilter").value="latest"; renderCategories(); renderProducts(); };
+    $("cartBtn").onclick=openCart; $("accountBtn").onclick=openAccount; $("mobileCheckoutBtn").onclick=openCart; $("checkoutCartBtn").onclick=()=>openCheckout("cart",state.cart); $("clearCartBtn").onclick=()=>{ state.cart=[]; saveCart(); renderCart(); };
+    $("doTrackBtn").onclick=trackOrder;
+    function syncBodyLock(){ document.body.style.overflow=document.querySelector(".product-page.open,.search-page.open,.modal.open,.drawer.open")?"hidden":""; }
+    document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>{ $(b.dataset.close).classList.remove("open"); syncBodyLock(); });
+    document.querySelectorAll(".drawer,.modal").forEach(m=>m.addEventListener("click",e=>{ if(e.target===m){ m.classList.remove("open"); syncBodyLock(); } }));
+    document.addEventListener("click",e=>{ if(!$("profileMenu").contains(e.target) && !$("accountBtn").contains(e.target)) closeProfileMenu(); });
+    window.addEventListener("scroll",()=>{ document.querySelector(".header")?.classList.toggle("compact",window.scrollY>24); },{passive:true});
+    window.addEventListener("resize",()=>renderBanners());
+    loadAll();
+  </script>
+</body>
 </html>
